@@ -8,13 +8,14 @@ public class PlayerController : MonoBehaviour {
 	public float rotation = 45.0f;
 	public Bullet bullet;
 	public float gunDamage = 50.0f;
+	public bool passthroughBullets = false;
 
 	[HideInInspector]
 	float angle;
 	float mouseX, mouseY;
 	public float bulletSpeed = 4.0f;
 	int currentWeapon = 1;
-	float[] damage = { 50.0f, 25.0f }; 
+	float[] damage = { 50.0f, 50.0f }; 
 	float[] fireRate = { 0.5f, 0.1f };
 	float dtime = 0.0f;
 
@@ -77,6 +78,7 @@ public class PlayerController : MonoBehaviour {
 			b.transform.rotation = transform.rotation;
 			b.transform.Rotate (new Vector3 (0, 0, -45.0f));
 			b.damage = damage [currentWeapon - 1];
+			b.passthrough = passthroughBullets;
 			dtime = 0.0f;
 		}
 	}

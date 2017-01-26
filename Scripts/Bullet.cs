@@ -10,6 +10,7 @@ public class Bullet : MonoBehaviour {
 	public Vector3 direction;
 	public PlayerController player;
 	public float damage = 5.0f;
+	public bool passthrough = false;
 
 	// Use this for initialization
 	void Start () {
@@ -34,7 +35,9 @@ public class Bullet : MonoBehaviour {
 	void OnTriggerEnter2D(Collider2D col) {
 		if (col.gameObject.tag == "Enemy") {
 			col.gameObject.SendMessage ("ApplyDamage", damage);
-			Destroy (gameObject);
+			if (!passthrough) {
+				Destroy (gameObject);
+			}
 		}
 		if (col.gameObject.tag == "Block") {
 			Destroy (gameObject);
