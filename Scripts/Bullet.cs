@@ -31,9 +31,12 @@ public class Bullet : MonoBehaviour {
 		transform.position += direction * Time.deltaTime;
 	}
 
-	void OnCollisionEnter2D(Collision2D col) {
+	void OnTriggerEnter2D(Collider2D col) {
 		if (col.gameObject.tag == "Enemy") {
 			col.gameObject.SendMessage ("ApplyDamage", damage);
+			Destroy (gameObject);
+		}
+		if (col.gameObject.tag == "Block") {
 			Destroy (gameObject);
 		}
 	}

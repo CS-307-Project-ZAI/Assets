@@ -13,6 +13,10 @@ public class PlayerController : MonoBehaviour {
 	float angle;
 	float mouseX, mouseY;
 	public float bulletSpeed = 4.0f;
+	int currentWeapon = 1;
+	float[] damage = { 50.0f, 25.0f }; 
+	float[] fireRate = { 0.5f, 0.1f };
+	float dtime = 0.0f;
 
 	// Use this for initialization
 	void Start () {
@@ -40,25 +44,40 @@ public class PlayerController : MonoBehaviour {
 	}
 
 	void getActions() {
-		if (Input.GetMouseButtonDown (0)) {
+		if (Input.GetKeyDown (KeyCode.Alpha1)) {
+			currentWeapon = 1;
+		} else if (Input.GetKeyDown (KeyCode.Alpha2)) {
+			currentWeapon = 2;
+		}
+		if (Input.GetMouseButton (0)) {
 			fireBullet ();
+		} else {
+			if (dtime < fireRate [currentWeapon - 1]) {
+				dtime += Time.deltaTime;
+			} else {
+				dtime = fireRate [currentWeapon - 1];
+			}
 		}
 	}
 
 	void fireBullet() {
-		Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
-		float dirX = mousePos.x - transform.position.x;
-		float dirY = mousePos.y - transform.position.y;
-		Vector3 dir = new Vector3(dirX, dirY, 0);
-		if (Vector3.Magnitude (dir) < .01) {
-			return;
+		dtime += Time.deltaTime;
+		if (dtime > fireRate [currentWeapon - 1]) {
+			Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
+			float dirX = mousePos.x - transform.position.x;
+			float dirY = mousePos.y - transform.position.y;
+			Vector3 dir = new Vector3 (dirX, dirY, 0);
+			if (Vector3.Magnitude (dir) < .01) {
+				return;
+			}
+			Bullet b = (Bullet)Instantiate (bullet);
+			b.player = this;
+			b.transform.position = new Vector3 (transform.position.x, transform.position.y, 0);
+			b.direction = Vector3.ClampMagnitude (dir * 1000, 1.0f) * bulletSpeed;
+			b.transform.rotation = transform.rotation;
+			b.transform.Rotate (new Vector3 (0, 0, -45.0f));
+			b.damage = damage [currentWeapon - 1];
+			dtime = 0.0f;
 		}
-		Bullet b = (Bullet) Instantiate (bullet);
-		b.player = this;
-		b.transform.position = transform.position;
-		b.direction = Vector3.ClampMagnitude (dir * 1000, 1.0f) * bulletSpeed;
-		b.transform.rotation = transform.rotation;
-		b.transform.Rotate (new Vector3 (0, 0, -45.0f));
-		b.damage = gunDamage;
 	}
 }
