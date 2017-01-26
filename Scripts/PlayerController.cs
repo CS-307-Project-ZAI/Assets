@@ -7,16 +7,16 @@ public class PlayerController : MonoBehaviour {
 	public float moveSpeed = 0.2f;
 	public float rotation = 45.0f;
 	public Bullet bullet;
+	public float gunDamage = 50.0f;
 
 	[HideInInspector]
-	//Rigidbody2D rb2d;
 	float angle;
 	float mouseX, mouseY;
 	public float bulletSpeed = 4.0f;
 
 	// Use this for initialization
 	void Start () {
-		//rb2d = GetComponent<Rigidbody2D> ();
+		
 	}
 	
 	// Update is called once per frame
@@ -36,6 +36,7 @@ public class PlayerController : MonoBehaviour {
 	void getRotation() {
 		Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
 		transform.rotation = Quaternion.LookRotation (Vector3.forward, mousePos - transform.position);
+		transform.Rotate (new Vector3 (0, 0, 45.0f));
 	}
 
 	void getActions() {
@@ -57,5 +58,7 @@ public class PlayerController : MonoBehaviour {
 		b.transform.position = transform.position;
 		b.direction = Vector3.ClampMagnitude (dir * 1000, 1.0f) * bulletSpeed;
 		b.transform.rotation = transform.rotation;
+		b.transform.Rotate (new Vector3 (0, 0, -45.0f));
+		b.damage = gunDamage;
 	}
 }

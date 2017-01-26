@@ -9,18 +9,18 @@ public class Bullet : MonoBehaviour {
 	[HideInInspector]
 	public Vector3 direction;
 	public PlayerController player;
-	BoxCollider2D bc2d;
+	public float damage = 5.0f;
 
 	// Use this for initialization
 	void Start () {
 		player = FindObjectOfType<PlayerController> ();
-		bc2d = GetComponent<BoxCollider2D> ();
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		//Check if out of bounds
-		if (Mathf.Abs (player.transform.position.x - transform.position.x) > maxDistance || Mathf.Abs (player.transform.position.y - transform.position.y) > maxDistance) {
+		if (Mathf.Abs (player.transform.position.x - transform.position.x) > maxDistance 
+			|| Mathf.Abs (player.transform.position.y - transform.position.y) > maxDistance) {
 			Destroy (gameObject);
 			return;
 		}
@@ -29,5 +29,12 @@ public class Bullet : MonoBehaviour {
 
 	void getMovement() {
 		transform.position += direction * Time.deltaTime;
+	}
+
+	void OnCollisionEnter2D(Collision2D col) {
+		if (col.gameObject.tag == "Enemy") {
+			col.gameObject.SendMessage ("ApplyDamage", damage);
+			Destroy (gameObject);
+		}
 	}
 }
