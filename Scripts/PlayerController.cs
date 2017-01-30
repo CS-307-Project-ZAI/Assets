@@ -5,30 +5,36 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour {
 
 	public float moveSpeed = 0.2f;
-	public float rotation = 45.0f;
-	public Bullet bullet;
-	public float gunDamage = 50.0f;
-	public bool passthroughBullets = false;
+	public List<Weapon> weapons;
+	public int health = 50;
+	public GameManager gm;
 
 	[HideInInspector]
-	float angle;
-	float mouseX, mouseY;
-	public float bulletSpeed = 4.0f;
-	int currentWeapon = 1;
-	float[] damage = { 50.0f, 50.0f }; 
-	float[] fireRate = { 0.5f, 0.1f };
-	float dtime = 0.0f;
+	public float rotationFix = 45.0f;
+	int currentWeapon = 0;
+	float attackTimer = 0.0f;
+	public bool reloading = false;
 
 	// Use this for initialization
 	void Start () {
-		
+		//Give player starting weapon
+		Weapon w = (Weapon)Instantiate (gm.startingWeapon);
+		w.owner = this;
+		string load = "AmmoTypes/" + w.ammoType;
+		print (load);
+		w.bullet = Resources.Load (load, typeof(Bullet)) as Bullet; 
+		print (w.bullet);
+		weapons.Add (w);
+		w.transform.parent = gameObject.transform;
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		getMovement ();
 		getRotation ();
-		getActions ();
+		if (weapons.Count > 0) {
+			getActions ();
+		}
 	}
 
 	void getMovement() {
@@ -41,45 +47,63 @@ public class PlayerController : MonoBehaviour {
 	void getRotation() {
 		Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
 		transform.rotation = Quaternion.LookRotation (Vector3.forward, mousePos - transform.position);
-		transform.Rotate (new Vector3 (0, 0, 45.0f));
+		transform.Rotate (new Vector3 (0, 0, rotationFix));
 	}
 
 	void getActions() {
-		if (Input.GetKeyDown (KeyCode.Alpha1)) {
-			currentWeapon = 1;
-		} else if (Input.GetKeyDown (KeyCode.Alpha2)) {
-			currentWeapon = 2;
-		}
-		if (Input.GetMouseButton (0)) {
-			fireBullet ();
-		} else {
-			if (dtime < fireRate [currentWeapon - 1]) {
-				dtime += Time.deltaTime;
+		if (!reloading) {
+			//Changing Weapons
+			if (Input.GetKeyDown (KeyCode.Alpha1) && weapons.Count > 0) {
+				currentWeapon = 0;
+				return;
+			} else if (Input.GetKeyDown (KeyCode.Alpha2) && weapons.Count > 1) {
+				currentWeapon = 1;
+				return;
+			} else if (Input.GetKeyDown (KeyCode.Alpha3) && weapons.Count > 2) {
+				currentWeapon = 2;
+				return;
+			}
+			
+			if (Input.GetMouseButton (0)) {
+				fireWeapon ();
 			} else {
-				dtime = fireRate [currentWeapon - 1];
+				if (attackTimer < weapons [currentWeapon].fireRate) {
+					attackTimer += Time.deltaTime;
+				} else {
+					attackTimer = weapons [currentWeapon].fireRate;
+				}
+			}
+
+			if ((Input.GetKeyDown (KeyCode.R) || (Input.GetMouseButton(0) && weapons[currentWeapon].currentLoaded == 0))
+				&& (weapons[currentWeapon].ammoPool > 0 || weapons[currentWeapon].ammoPool == -1)
+				&& weapons[currentWeapon].clipSize != -1) {
+				reloading = true;
+			}
+		} else {
+			if (Input.GetMouseButton (0) && weapons[currentWeapon].currentLoaded > 0) {
+				reloading = false;
+				weapons [currentWeapon].SendMessage ("interruptReload");
+				fireWeapon ();
 			}
 		}
 	}
 
-	void fireBullet() {
-		dtime += Time.deltaTime;
-		if (dtime > fireRate [currentWeapon - 1]) {
-			Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
-			float dirX = mousePos.x - transform.position.x;
-			float dirY = mousePos.y - transform.position.y;
-			Vector3 dir = new Vector3 (dirX, dirY, 0);
-			if (Vector3.Magnitude (dir) < .01) {
-				return;
-			}
-			Bullet b = (Bullet)Instantiate (bullet);
-			b.player = this;
-			b.transform.position = new Vector3 (transform.position.x, transform.position.y, 0);
-			b.direction = Vector3.ClampMagnitude (dir * 1000, 1.0f) * bulletSpeed;
-			b.transform.rotation = transform.rotation;
-			b.transform.Rotate (new Vector3 (0, 0, -45.0f));
-			b.damage = damage [currentWeapon - 1];
-			b.passthrough = passthroughBullets;
-			dtime = 0.0f;
+	void fireWeapon() {
+		attackTimer += Time.deltaTime;
+		if (attackTimer > weapons [currentWeapon].fireRate && weapons [currentWeapon].currentLoaded > 0) {
+			weapons [currentWeapon].SendMessage ("fireWeapon");
+			attackTimer = 0.0f;
 		}
+	}
+
+	void aliveCheck() {
+		if (health <= 0) {
+			print ("Game Over!");
+		}
+	}
+
+	void ApplyDamage(int dmg) {
+		this.health -= dmg;
+		aliveCheck ();
 	}
 }

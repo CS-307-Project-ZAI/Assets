@@ -5,13 +5,14 @@ using UnityEngine;
 public class GameManager : MonoBehaviour {
 
 	public PlayerController player;
-	public List<EnemyController> enemies;
 	public EnemyController enemy;
+	public List<EnemyController> enemies;
 	public int spawnAmount = 1;
+	public Weapon startingWeapon;
 
 	// Use this for initialization
 	void Start () {
-		
+		spawnPlayer ();
 	}
 	
 	// Update is called once per frame
@@ -21,6 +22,11 @@ public class GameManager : MonoBehaviour {
 				spawnEnemy ();
 			}
 		}
+	}
+
+	void spawnPlayer() {
+		player = (PlayerController)Instantiate (player);
+		player.gm = this;
 	}
 
 	void spawnEnemy() {

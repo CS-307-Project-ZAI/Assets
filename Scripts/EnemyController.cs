@@ -7,19 +7,27 @@ public class EnemyController : MonoBehaviour {
 	public int health = 50;
 	public float moveSpeed = 0.5f;
 	public PlayerController target;
-	public float spawnTime = 5.0f;
+	public float spawnRate = 5.0f;
+	public float attackRate = 1.0f;
 	public int spawnAmount = 1;
+	public int damage = 2;
 	public EnemyController spawn;
 
-	float timer = 0.0f;
+	float spawnTimer = 0.0f;
+	float attackTimer = 0.0f;
+
+	GameManager gm;
 
 	// Use this for initialization
 	void Start () {
-		timer = 0.0f;
+		spawnTimer = 0.0f;
+		attackTimer = 0.0f;
+		gm = FindObjectOfType<GameManager> ();
 	}
 	
 	// Update is called once per frame
 	void Update () {
+		attackTimer += Time.deltaTime;
 		getMovement ();
 		getRotation ();
 		checkSpawnTime ();
@@ -38,12 +46,12 @@ public class EnemyController : MonoBehaviour {
 	}
 
 	void checkSpawnTime() {
-		timer += Time.deltaTime;
-		if (timer > spawnTime) {
+		spawnTimer += Time.deltaTime;
+		if (spawnTimer > spawnRate) {
 			for (int i = 0; i < spawnAmount; i++) {
 				spawnChild ();
 			}
-			timer = 0.0f;
+			spawnTimer = 0.0f;
 		}
 	}
 
@@ -52,11 +60,12 @@ public class EnemyController : MonoBehaviour {
 		e.target = target;
 		e.transform.position = transform.position + new Vector3(1, 0, 0);
 		e.spawn = spawn;
-		e.timer = 0.0f;
+		gm.enemies.Add (e);
 	}
 
-	public void aliveCheck() {
+	void aliveCheck() {
 		if (health <= 0) {
+			gm.enemies.Remove (this);
 			Destroy (gameObject);
 		}
 	}
@@ -64,5 +73,14 @@ public class EnemyController : MonoBehaviour {
 	void ApplyDamage(int dmg) {
 		this.health -= dmg;
 		aliveCheck ();
+	}
+
+	void OnTriggerStay2D(Collider2D col) {
+		if (col.gameObject.tag == "Player") {
+			if (attackTimer >= attackRate) {
+				col.gameObject.SendMessage ("ApplyDamage", damage);
+				attackTimer = 0.0f;
+			}
+		}
 	}
 }
