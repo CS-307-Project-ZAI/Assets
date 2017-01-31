@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Weapon : MonoBehaviour {
 
-	public PlayerController owner;
+	public PersonController owner;
 	public Bullet bullet;
 	public string weaponName;
 	public string type;
@@ -62,9 +62,34 @@ public class Weapon : MonoBehaviour {
 		if (Vector3.Magnitude (dir) < .01) {
 			return;
 		}
+		fireBullet (dir);
+	}
+
+	public void fireWeaponAt(Vector3 point) {
+		float dirX = point.x - transform.position.x;
+		float dirY = point.y - transform.position.y;
+		Vector3 dir = new Vector3 (dirX, dirY, 0);
+		if (Vector3.Magnitude (dir) < .01) {
+			return;
+		}
+		fireBullet (dir);
+	}
+
+	void fireBullet(Vector3 dir) {
 		Bullet b = (Bullet)Instantiate (bullet);
-		b.player = owner;
+		b.owner = owner;
 		b.transform.position = new Vector3 (transform.position.x, transform.position.y, 0);
+
+		float randomSkew = (2 * Random.value * skew) - skew;
+		float angle = Vector3.Angle (Vector3.right, dir);
+		if (dir.y >= 0) {
+			angle += randomSkew;
+		}
+		else {
+			angle = -angle + randomSkew;
+		}
+		dir = new Vector3 (Mathf.Cos (Mathf.Deg2Rad * angle), Mathf.Sin (Mathf.Deg2Rad * angle), 0);
+
 		b.direction = Vector3.ClampMagnitude (dir * 1000, 1.0f) * bulletSpeed;
 		b.transform.rotation = transform.rotation;
 		b.transform.Rotate (new Vector3 (0, 0, -owner.rotationFix));

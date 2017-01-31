@@ -5,6 +5,8 @@ using UnityEngine;
 public class GameManager : MonoBehaviour {
 
 	public PlayerController player;
+	public AllyController ally;
+	public List<AllyController> people;
 	public EnemyController enemy;
 	public List<EnemyController> enemies;
 	public int spawnAmount = 1;
@@ -13,6 +15,7 @@ public class GameManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		spawnPlayer ();
+		spawnAlly ();
 	}
 	
 	// Update is called once per frame
@@ -27,6 +30,12 @@ public class GameManager : MonoBehaviour {
 	void spawnPlayer() {
 		player = (PlayerController)Instantiate (player);
 		player.gm = this;
+	}
+
+	void spawnAlly() {
+		AllyController a = (AllyController)Instantiate (ally);
+		people.Add (a);
+		a.gm = this;
 	}
 
 	void spawnEnemy() {

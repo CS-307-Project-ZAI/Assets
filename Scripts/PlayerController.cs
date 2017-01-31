@@ -2,32 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour {
+public class PlayerController : PersonController {
 
-	public float moveSpeed = 0.2f;
-	public List<Weapon> weapons;
-	public int health = 50;
-	public GameManager gm;
+	public List<AllyController> allies;
 
-	[HideInInspector]
-	public float rotationFix = 45.0f;
-	int currentWeapon = 0;
-	float attackTimer = 0.0f;
-	public bool reloading = false;
-
-	// Use this for initialization
-	void Start () {
-		//Give player starting weapon
-		Weapon w = (Weapon)Instantiate (gm.startingWeapon);
-		w.owner = this;
-		string load = "AmmoTypes/" + w.ammoType;
-		print (load);
-		w.bullet = Resources.Load (load, typeof(Bullet)) as Bullet; 
-		print (w.bullet);
-		weapons.Add (w);
-		w.transform.parent = gameObject.transform;
+	void Start() {
+		base.Start ();
 	}
-	
+
 	// Update is called once per frame
 	void Update () {
 		getMovement ();
@@ -88,22 +70,13 @@ public class PlayerController : MonoBehaviour {
 		}
 	}
 
-	void fireWeapon() {
-		attackTimer += Time.deltaTime;
-		if (attackTimer > weapons [currentWeapon].fireRate && weapons [currentWeapon].currentLoaded > 0) {
-			weapons [currentWeapon].SendMessage ("fireWeapon");
-			attackTimer = 0.0f;
-		}
+	void addAlly(AllyController ally) {
+		allies.Add (ally);
+		ally.leader = this;
+		ally.mode = AllyController.Mode.standstill;
 	}
 
-	void aliveCheck() {
-		if (health <= 0) {
-			print ("Game Over!");
-		}
-	}
-
-	void ApplyDamage(int dmg) {
-		this.health -= dmg;
-		aliveCheck ();
+	void removeAlly(AllyController ally) {
+		allies.Remove (ally);
 	}
 }
