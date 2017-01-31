@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyController : MonoBehaviour {
+public class EnemyController : PersonController {
 
-	public int health = 50;
-	public float moveSpeed = 0.5f;
 	public PlayerController target;
 	public float spawnRate = 5.0f;
 	public float attackRate = 1.0f;
@@ -14,9 +12,6 @@ public class EnemyController : MonoBehaviour {
 	public EnemyController spawn;
 
 	float spawnTimer = 0.0f;
-	float attackTimer = 0.0f;
-
-	GameManager gm;
 
 	// Use this for initialization
 	void Start () {
@@ -63,16 +58,11 @@ public class EnemyController : MonoBehaviour {
 		gm.enemies.Add (e);
 	}
 
-	void aliveCheck() {
+	public override void aliveCheck() {
 		if (health <= 0) {
 			gm.enemies.Remove (this);
 			Destroy (gameObject);
 		}
-	}
-
-	void ApplyDamage(int dmg) {
-		this.health -= dmg;
-		aliveCheck ();
 	}
 
 	void OnTriggerStay2D(Collider2D col) {
