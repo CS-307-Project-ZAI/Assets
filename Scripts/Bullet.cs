@@ -8,8 +8,10 @@ public class Bullet : MonoBehaviour {
 
 	[HideInInspector]
 	public Vector3 direction;
-	public PersonController owner;
-	public float damage = 5.0f;
+
+	public PlayerController player;
+	public float damage = 10.0f;
+
 	public bool passthrough = false;
 
 	// Use this for initialization
