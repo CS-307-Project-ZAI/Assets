@@ -9,7 +9,7 @@ public class Bullet : MonoBehaviour {
 	[HideInInspector]
 	public Vector3 direction;
 
-	public PlayerController player;
+	public PersonController owner;
 	public float damage = 10.0f;
 
 	public bool passthrough = false;
