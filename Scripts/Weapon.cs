@@ -30,7 +30,7 @@ public class Weapon : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	public void ControlledUpdate () {
 		//Update transform of weapon to follow owner
 		this.transform.position = owner.transform.position;
 		this.transform.rotation = owner.transform.rotation;
@@ -79,7 +79,7 @@ public class Weapon : MonoBehaviour {
 		Bullet b = (Bullet)Instantiate (bullet);
 		b.owner = owner;
 		b.transform.position = new Vector3 (transform.position.x, transform.position.y, 0);
-
+		owner.gm.bullets.Add (b);
 		float randomSkew = (2 * Random.value * skew) - skew;
 		float angle = Vector3.Angle (Vector3.right, dir);
 		if (dir.y >= 0) {

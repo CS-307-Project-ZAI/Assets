@@ -39,7 +39,7 @@ public class AllyController : PersonController {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	public void GMUpdate () {
 		getActions ();
 		if (!performingAction) {
 			getMovement ();
@@ -47,6 +47,9 @@ public class AllyController : PersonController {
 		} else {
 			transform.rotation = Quaternion.LookRotation (Vector3.forward, actionPoint - transform.position);
 			transform.Rotate (new Vector3 (0, 0, rotationFix));
+		}
+		foreach (Weapon w in weapons) {
+			w.ControlledUpdate ();
 		}
 	}
 
