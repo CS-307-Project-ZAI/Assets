@@ -9,8 +9,14 @@ public class GameManager : MonoBehaviour {
 	public List<AllyController> people;
 	public EnemyController enemy;
 	public List<EnemyController> enemies;
+	public List<Bullet> bullets;
 	public int spawnAmount = 1;
 	public Weapon startingWeapon;
+	public string playerMode = "Combat";
+
+	[HideInInspector]
+	public List<EnemyController> enemyKill;
+	public List<Bullet> bulletKill;
 
 	// Use this for initialization
 	void Start () {
@@ -20,6 +26,45 @@ public class GameManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		//Get Game Actions
+		getManagerActions ();
+
+		//Update Player
+		player.GMUpdate ();
+
+		//Update Enemies
+		foreach (EnemyController e in enemies) {
+			e.GMUpdate ();
+			if (e.kill) {
+				enemyKill.Add (e);
+			}
+		}
+		foreach (EnemyController e in enemyKill) {
+			enemies.Remove (e);
+			Destroy (e.gameObject);
+		}
+		enemyKill.Clear ();
+
+		//Update Allies
+		foreach (AllyController a in people) {
+			a.GMUpdate ();
+		}
+
+		//Update Bullets
+		foreach (Bullet b in bullets) {
+			b.GMUpdate ();
+			if (b.kill) {
+				bulletKill.Add (b);
+			}
+		}
+		foreach (Bullet b in bulletKill) {
+			bullets.Remove (b);
+			Destroy (b.gameObject);
+		}
+		bulletKill.Clear ();
+	}
+
+	void getManagerActions() {
 		if (Input.GetKeyDown (KeyCode.Space)) {
 			for (int i = 0; i < spawnAmount; i++) {
 				spawnEnemy ();

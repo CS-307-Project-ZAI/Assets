@@ -11,9 +11,12 @@ public class PlayerController : PersonController {
 	}
 
 	// Update is called once per frame
-	void Update () {
+	public void GMUpdate () {
 		getMovement ();
 		getRotation ();
+		foreach (Weapon w in weapons) {
+			w.ControlledUpdate ();
+		}
 		if (weapons.Count > 0) {
 			getActions ();
 		}
@@ -33,40 +36,46 @@ public class PlayerController : PersonController {
 	}
 
 	void getActions() {
-		if (!reloading) {
-			//Changing Weapons
-			if (Input.GetKeyDown (KeyCode.Alpha1) && weapons.Count > 0) {
-				currentWeapon = 0;
-				return;
-			} else if (Input.GetKeyDown (KeyCode.Alpha2) && weapons.Count > 1) {
-				currentWeapon = 1;
-				return;
-			} else if (Input.GetKeyDown (KeyCode.Alpha3) && weapons.Count > 2) {
-				currentWeapon = 2;
-				return;
-			}
+		if (gm.playerMode == "Combat") {
+			if (!reloading) {
+				//Changing Weapons
+				if (Input.GetKeyDown (KeyCode.Alpha1) && weapons.Count > 0) {
+					currentWeapon = 0;
+					return;
+				} else if (Input.GetKeyDown (KeyCode.Alpha2) && weapons.Count > 1) {
+					currentWeapon = 1;
+					return;
+				} else if (Input.GetKeyDown (KeyCode.Alpha3) && weapons.Count > 2) {
+					currentWeapon = 2;
+					return;
+				}
 			
-			if (Input.GetMouseButton (0)) {
-				fireWeapon ();
-			} else {
-				if (attackTimer < weapons [currentWeapon].fireRate) {
-					attackTimer += Time.deltaTime;
+				if (Input.GetMouseButton (0)) {
+					fireWeapon ();
 				} else {
-					attackTimer = weapons [currentWeapon].fireRate;
+					if (attackTimer < weapons [currentWeapon].fireRate) {
+						attackTimer += Time.deltaTime;
+					} else {
+						attackTimer = weapons [currentWeapon].fireRate;
+					}
+				}
+
+				if ((Input.GetKeyDown (KeyCode.R) || (Input.GetMouseButton (0) && weapons [currentWeapon].currentLoaded == 0))
+				    && (weapons [currentWeapon].ammoPool > 0 || weapons [currentWeapon].ammoPool == -1)
+				    && weapons [currentWeapon].clipSize != -1) {
+					reloading = true;
+				}
+			} else {
+				if (Input.GetMouseButton (0) && weapons [currentWeapon].currentLoaded > 0) {
+					reloading = false;
+					weapons [currentWeapon].SendMessage ("interruptReload");
+					fireWeapon ();
 				}
 			}
+		} else if (gm.playerMode == "Command") {
 
-			if ((Input.GetKeyDown (KeyCode.R) || (Input.GetMouseButton(0) && weapons[currentWeapon].currentLoaded == 0))
-				&& (weapons[currentWeapon].ammoPool > 0 || weapons[currentWeapon].ammoPool == -1)
-				&& weapons[currentWeapon].clipSize != -1) {
-				reloading = true;
-			}
-		} else {
-			if (Input.GetMouseButton (0) && weapons[currentWeapon].currentLoaded > 0) {
-				reloading = false;
-				weapons [currentWeapon].SendMessage ("interruptReload");
-				fireWeapon ();
-			}
+		} else if (gm.playerMode == "Build") {
+
 		}
 	}
 

@@ -11,6 +11,9 @@ public class EnemyController : PersonController {
 	public int damage = 2;
 	public EnemyController spawn;
 
+	[HideInInspector]
+	public bool kill = false;
+
 	float spawnTimer = 0.0f;
 
 	// Use this for initialization
@@ -21,7 +24,7 @@ public class EnemyController : PersonController {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	public void GMUpdate () {
 		attackTimer += Time.deltaTime;
 		getMovement ();
 		getRotation ();
@@ -60,8 +63,7 @@ public class EnemyController : PersonController {
 
 	public override void aliveCheck() {
 		if (health <= 0) {
-			gm.enemies.Remove (this);
-			Destroy (gameObject);
+			kill = true;
 		}
 	}
 
