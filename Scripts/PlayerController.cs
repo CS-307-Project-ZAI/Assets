@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,7 +10,7 @@ public class PlayerController : PersonController {
 		base.Start ();
 	}
 
-	// Update is called once per frame
+	// GMUpdate is called by the GameManager once per frame
 	public void GMUpdate () {
 		getMovement ();
 		getRotation ();
@@ -73,7 +73,7 @@ public class PlayerController : PersonController {
 				}
 			}
 		} else if (gm.playerMode == "Command") {
-
+            
 		} else if (gm.playerMode == "Build") {
 
 		}
