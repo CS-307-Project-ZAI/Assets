@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,7 +10,7 @@ public class PlayerController : PersonController {
 		base.Start ();
 	}
 
-	// Update is called once per frame
+	// GMUpdate is called by the GameManager once per frame
 	public void GMUpdate () {
 		getMovement ();
 		getRotation ();
@@ -36,7 +36,7 @@ public class PlayerController : PersonController {
 	}
 
 	void getActions() {
-		if (gm.playerMode == "Combat") {
+		if (gm.playerMode == "Combat") { //Get actions for Combat mode
 			if (!reloading) {
 				//Changing Weapons
 				if (Input.GetKeyDown (KeyCode.Alpha1) && weapons.Count > 0) {
@@ -71,10 +71,14 @@ public class PlayerController : PersonController {
 					weapons [currentWeapon].SendMessage ("interruptReload");
 					fireWeapon ();
 				}
-			}
-		} else if (gm.playerMode == "Command") {
 
-		} else if (gm.playerMode == "Build") {
+			}
+			if (Input.GetMouseButton (1)) { //Player right-clicks in Combat mode
+				
+			}
+		} else if (gm.playerMode == "Command") { //Get actions for Command mode
+            
+		} else if (gm.playerMode == "Build") { //Get actions for Build mode
 
 		}
 	}
