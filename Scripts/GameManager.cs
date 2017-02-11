@@ -18,6 +18,9 @@ public class GameManager : MonoBehaviour {
 	public List<EnemyController> enemyKill;
 	public List<Bullet> bulletKill;
 
+	private int modeIndex = 0;
+	private string[] modes = {"Combat", "Command", "Build"};
+
 	// Use this for initialization
 	void Start () {
 		spawnPlayer ();
@@ -65,10 +68,15 @@ public class GameManager : MonoBehaviour {
 	}
 
 	void getManagerActions() {
-		if (Input.GetKeyDown (KeyCode.Space)) {
+		if (Input.GetKeyDown (KeyCode.J)) {
 			for (int i = 0; i < spawnAmount; i++) {
 				spawnEnemy ();
 			}
+		}
+		if (Input.GetKeyDown (KeyCode.Space)) {
+			modeIndex = (modeIndex + 1) % modes.Length;
+			playerMode = modes[modeIndex];
+			print (playerMode);
 		}
 	}
 

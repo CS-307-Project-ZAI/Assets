@@ -36,7 +36,7 @@ public class PlayerController : PersonController {
 	}
 
 	void getActions() {
-		if (gm.playerMode == "Combat") {
+		if (gm.playerMode == "Combat") { //Get actions for Combat mode
 			if (!reloading) {
 				//Changing Weapons
 				if (Input.GetKeyDown (KeyCode.Alpha1) && weapons.Count > 0) {
@@ -71,10 +71,14 @@ public class PlayerController : PersonController {
 					weapons [currentWeapon].SendMessage ("interruptReload");
 					fireWeapon ();
 				}
+
 			}
-		} else if (gm.playerMode == "Command") {
+			if (Input.GetMouseButton (1)) { //Player right-clicks in Combat mode
+				
+			}
+		} else if (gm.playerMode == "Command") { //Get actions for Command mode
             
-		} else if (gm.playerMode == "Build") {
+		} else if (gm.playerMode == "Build") { //Get actions for Build mode
 
 		}
 	}
