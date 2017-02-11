@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour {
 	[HideInInspector]
 	public List<EnemyController> enemyKill;
 	public List<Bullet> bulletKill;
+	private bool paused = false;
 
 	private int modeIndex = 0;
 	private string[] modes = {"Combat", "Command", "Build"};
@@ -29,6 +30,12 @@ public class GameManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		if (paused) {
+			if (Input.GetKeyDown (KeyCode.Escape)) {
+				paused = !paused;
+			}
+			return;
+		}
 		//Get Game Actions
 		getManagerActions ();
 
@@ -77,6 +84,9 @@ public class GameManager : MonoBehaviour {
 			modeIndex = (modeIndex + 1) % modes.Length;
 			playerMode = modes[modeIndex];
 			print (playerMode);
+		}
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+			paused = !paused;
 		}
 	}
 

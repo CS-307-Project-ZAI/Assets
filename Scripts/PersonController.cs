@@ -17,7 +17,6 @@ public class PersonController : MonoBehaviour {
 	protected float attackTimer = 0.0f;
 
 	protected void Start() {
-
 		//Give person starting weapon
 		Weapon w = (Weapon)Instantiate (gm.startingWeapon);
 		w.owner = this;
