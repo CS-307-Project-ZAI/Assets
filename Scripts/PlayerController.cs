@@ -92,4 +92,10 @@ public class PlayerController : PersonController {
 	void removeAlly(AllyController ally) {
 		allies.Remove (ally);
 	}
+
+	public override void aliveCheck() {
+		if (health <= 0) {
+			print ("Game Over!");
+		}
+	}
 }
