@@ -3,16 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class CameraController : MonoBehaviour {
-	public GameManager gm;
 	public Texture2D combatCursor;
 	public Texture2D commandCursor;
 	public Texture2D buildCursor;
-	public string activeCursor = "Combat";
+
+	[HideInInspector]
 	public bool ccEnabled = false; 
+	GameManager gm;
+	string activeCursor = "Combat";
 
 	void Start() 
 	{ 
-		//Call the 'SetCustomCursor' (see below) with a delay of 2 seconds.  
+		gm = FindObjectOfType<GameManager> ();
 		Invoke("SetCustomCursor", 0.5f); 
 	} 
 
@@ -38,7 +40,7 @@ public class CameraController : MonoBehaviour {
 	{   
 		switch (gm.playerMode) {
 		case "Combat":
-			Cursor.SetCursor (combatCursor, new Vector2 (-0.5f, 0.5f), CursorMode.Auto); 
+			Cursor.SetCursor (combatCursor, new Vector2(combatCursor.width / 2.0f, combatCursor.height / 2.0f), CursorMode.Auto); 
 			break;
 		case "Command":
 			Cursor.SetCursor (commandCursor, Vector2.zero, CursorMode.Auto);

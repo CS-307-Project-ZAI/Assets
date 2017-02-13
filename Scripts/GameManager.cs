@@ -19,6 +19,7 @@ public class GameManager : MonoBehaviour {
 	public List<Bullet> bulletKill;
 	private bool paused = false;
 	public UIController ui;
+	private CameraController cam;
 
 	private int modeIndex = 0;
 	private string[] modes = {"Combat", "Command", "Build"};
@@ -26,6 +27,7 @@ public class GameManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		ui = FindObjectOfType<UIController> ();
+		cam = FindObjectOfType<CameraController> ();
 		ui.GMStart ();
 		spawnPlayer ();
 		spawnAlly ();
@@ -41,6 +43,13 @@ public class GameManager : MonoBehaviour {
 		}
 		//Get Game Actions
 		getManagerActions ();
+
+
+		//Update UI
+		ui.GMUpdate();
+
+		//Update Camera
+		cam.GMUpdate();
 
 		//Update Player
 		player.GMUpdate ();

@@ -14,7 +14,7 @@ public class PersonController : MonoBehaviour {
 	public bool reloading = false;
 	public bool kill = false;
 
-	protected int currentWeapon = 0;
+	public int currentWeapon = 0;
 	protected float attackTimer = 0.0f;
 
 	protected void Start() {
@@ -46,6 +46,9 @@ public class PersonController : MonoBehaviour {
 
 	void ApplyDamage(int dmg) {
 		this.health -= dmg;
+		if (this.health < 0) {
+			health = 0;
+		}
 		aliveCheck ();
 	}
 
