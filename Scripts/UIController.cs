@@ -7,14 +7,20 @@ public class UIController : MonoBehaviour {
 
 	GameManager gm;
 
-	GameObject infoBox1;
+	GameObject infoBoxLeft;
+	GameObject infoBoxRight;
 
 	[HideInInspector]
 	public Text modeText;
+	public Text clipSize;
+	public Text ammoLeft;
 
 	public void GMStart() {
 		gm = FindObjectOfType<GameManager> ();
-		infoBox1 = transform.Find ("Info Box").gameObject;
+		infoBoxLeft = transform.Find ("Info Box Left").gameObject;
+		infoBoxRight = transform.Find ("Info Box Right").gameObject;
 		modeText = GameObject.Find ("Mode").GetComponent<Text>();
+		clipSize = GameObject.Find ("ClipSize").GetComponent<Text> ();
+		ammoLeft = GameObject.Find ("AmmoLeft").GetComponent<Text> ();
 	}
 }

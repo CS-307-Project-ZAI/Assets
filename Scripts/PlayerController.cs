@@ -20,6 +20,8 @@ public class PlayerController : PersonController {
 		if (weapons.Count > 0) {
 			getActions ();
 		}
+		gm.ui.ammoLeft.text = weapons [currentWeapon].currentLoaded.ToString ();
+		gm.ui.clipSize.text = weapons [currentWeapon].clipSize.ToString ();
 	}
 
 	void getMovement() {
