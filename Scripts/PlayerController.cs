@@ -6,7 +6,7 @@ public class PlayerController : PersonController {
 
 	public List<AllyController> allies;
 
-	void Start() {
+	new void Start() {
 		base.Start ();
 	}
 

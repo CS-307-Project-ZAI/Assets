@@ -29,7 +29,7 @@ public class AllyController : PersonController {
 	public float flightDistance = 1.0f;
 
 	// Use this for initialization
-	void Start () {
+	new void Start () {
 		base.Start ();
 		if (mode == Mode.points) {
 			previousPosition = movePoints [0];

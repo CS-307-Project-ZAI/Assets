@@ -14,7 +14,7 @@ public class EnemyController : PersonController {
 	float spawnTimer = 0.0f;
 
 	// Use this for initialization
-	void Start () {
+	new void Start () {
 		spawnTimer = 0.0f;
 		attackTimer = 0.0f;
 		gm = FindObjectOfType<GameManager> ();
