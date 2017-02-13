@@ -12,6 +12,7 @@ public class PersonController : MonoBehaviour {
 
 	[HideInInspector]
 	public bool reloading = false;
+	public bool kill = false;
 
 	protected int currentWeapon = 0;
 	protected float attackTimer = 0.0f;
@@ -50,7 +51,7 @@ public class PersonController : MonoBehaviour {
 
 	public virtual void aliveCheck() {
 		if (health <= 0) {
-			print ("Game Over!");
+			kill = true;
 		}
 	}
 }

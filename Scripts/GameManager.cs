@@ -15,15 +15,18 @@ public class GameManager : MonoBehaviour {
 	public string playerMode = "Combat";
 
 	[HideInInspector]
-	public List<EnemyController> enemyKill;
+	public List<PersonController> personKill;
 	public List<Bullet> bulletKill;
 	private bool paused = false;
+	public UIController ui;
 
 	private int modeIndex = 0;
 	private string[] modes = {"Combat", "Command", "Build"};
 
 	// Use this for initialization
 	void Start () {
+		ui = FindObjectOfType<UIController> ();
+		ui.GMStart ();
 		spawnPlayer ();
 		spawnAlly ();
 	}
@@ -46,19 +49,28 @@ public class GameManager : MonoBehaviour {
 		foreach (EnemyController e in enemies) {
 			e.GMUpdate ();
 			if (e.kill) {
-				enemyKill.Add (e);
+				personKill.Add (e);
 			}
 		}
-		foreach (EnemyController e in enemyKill) {
-			enemies.Remove (e);
-			Destroy (e.gameObject);
-		}
-		enemyKill.Clear ();
 
 		//Update Allies
 		foreach (AllyController a in people) {
 			a.GMUpdate ();
+			if (a.kill) {
+				personKill.Add (a);
+			}
 		}
+
+		//Destroy each object in the kill list and clear it
+		foreach (PersonController p in personKill) {
+			if (p.gameObject.tag == "Enemy") {
+				enemies.Remove ((EnemyController) p);
+			} else if (p.gameObject.tag == "Ally") {
+				people.Remove ((AllyController) p);
+			}
+			Destroy (p.gameObject);
+		}
+		personKill.Clear ();
 
 		//Update Bullets
 		foreach (Bullet b in bullets) {
@@ -83,7 +95,8 @@ public class GameManager : MonoBehaviour {
 		if (Input.GetKeyDown (KeyCode.Space)) {
 			modeIndex = (modeIndex + 1) % modes.Length;
 			playerMode = modes[modeIndex];
-			print (playerMode);
+			ui.modeText.text = playerMode;
+			//print (playerMode);
 		}
 		if (Input.GetKeyDown (KeyCode.Escape)) {
 			paused = !paused;

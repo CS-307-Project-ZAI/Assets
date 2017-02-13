@@ -11,9 +11,6 @@ public class EnemyController : PersonController {
 	public int damage = 2;
 	public EnemyController spawn;
 
-	[HideInInspector]
-	public bool kill = false;
-
 	float spawnTimer = 0.0f;
 
 	// Use this for initialization
@@ -61,14 +58,13 @@ public class EnemyController : PersonController {
 		gm.enemies.Add (e);
 	}
 
-	public override void aliveCheck() {
-		if (health <= 0) {
-			kill = true;
-		}
-	}
-
 	void OnTriggerStay2D(Collider2D col) {
 		if (col.gameObject.tag == "Player") {
+			if (attackTimer >= attackRate) {
+				col.gameObject.SendMessage ("ApplyDamage", damage);
+				attackTimer = 0.0f;
+			}
+		} else if (col.gameObject.tag == "Ally") {
 			if (attackTimer >= attackRate) {
 				col.gameObject.SendMessage ("ApplyDamage", damage);
 				attackTimer = 0.0f;
