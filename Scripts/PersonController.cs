@@ -9,10 +9,12 @@ public class PersonController : MonoBehaviour {
 	public int health = 50;
 	public GameManager gm;
 	public float rotationFix = 0.0f;
+	public string personName = "Person";
 
 	[HideInInspector]
 	public bool reloading = false;
 	public bool kill = false;
+	public GameObject targetTag = null;
 
 	public int currentWeapon = 0;
 	protected float attackTimer = 0.0f;

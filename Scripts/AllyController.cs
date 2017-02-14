@@ -5,8 +5,9 @@ using UnityEngine;
 public class AllyController : PersonController {
 
 	public PlayerController leader;
-	public enum Mode {standstill, points, leaderless}; 
-	public Mode mode;
+	public string mode = "Standstill";
+	private string prevMode = "Standstill";
+	public string aggression = "Defensive";
 
 	public List<Vector3> movePoints;
 	public Vector3 lookPoint;
@@ -24,15 +25,19 @@ public class AllyController : PersonController {
 	public float actionDelay = 0.5f;
 	float actionTimer = 0.0f;
 	bool performingAction = false;
-	Vector3 previousPosition;
+	public Vector3 previousPosition;
 	bool positionFix = false;
 	public float flightDistance = 1.0f;
+
+	[HideInInspector]
+	public List<string> modes = new List<string> {"Standstill", "Points", "Wander"};
+	public List<string> aggressions = new List<string> {"Passive", "Defensive", "Offensive"};
 
 	// Use this for initialization
 	new void Start () {
 		base.Start ();
-		if (mode == Mode.points) {
-			previousPosition = movePoints [0];
+		previousPosition = movePoints [0];
+		if (mode == "Points") {
 			positionFix = true;
 			onPath = false;
 		}
@@ -40,6 +45,13 @@ public class AllyController : PersonController {
 	
 	// Update is called once per frame
 	public void GMUpdate () {
+		if (prevMode != mode) {
+			prevMode = mode;
+			if (mode == "Points") {
+				positionFix = true;
+				onPath = false;
+			}
+		}
 		getActions ();
 		if (!performingAction) {
 			getMovement ();
@@ -55,11 +67,9 @@ public class AllyController : PersonController {
 
 	void getMovement() {
 		switch (mode) {
-		case Mode.leaderless:
+		case "Standstill":
 			break;
-		case Mode.standstill:
-			return;
-		case Mode.points:
+		case "Points":
 			if (!performingAction) {
 				Vector3 direction = Vector3.zero;
 				if (positionFix) {
@@ -72,6 +82,9 @@ public class AllyController : PersonController {
 					direction = Vector3.ClampMagnitude(dir * 1000, moveSpeed) * Time.deltaTime;
 				} else {
 					direction = CalculatePointMovement ();
+					if (onPath) {
+						previousPosition = transform.position;
+					}
 				}
 				transform.position += direction;
 				if (direction != Vector3.zero) {
@@ -79,11 +92,12 @@ public class AllyController : PersonController {
 				}
 			}
 			break;
+		case "Wander":
+			break;
 		}
 	}
 
 	Vector3 CalculatePointMovement() {
-
 		if (Time.time < nextMoveTime) {
 			return Vector3.zero;
 		}
@@ -115,13 +129,15 @@ public class AllyController : PersonController {
 
 	void getRotation() {
 		switch (mode) {
-		case Mode.leaderless:
-			break;
-		case Mode.standstill:
-			break;
-		case Mode.points:
+		case "Standstill":
 			transform.rotation = Quaternion.LookRotation (Vector3.forward, lookPoint);
 			transform.Rotate (new Vector3 (0, 0, rotationFix));
+			break;
+		case "Points":
+			transform.rotation = Quaternion.LookRotation (Vector3.forward, lookPoint);
+			transform.Rotate (new Vector3 (0, 0, rotationFix));
+			break;
+		case "Wander":
 			break;
 		}
 	}

@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour {
 	public List<AllyController> people;
 	public EnemyController enemy;
 	public List<EnemyController> enemies;
+	public List<EnemyController> targetedEnemies;
 	public List<Bullet> bullets;
 	public int spawnAmount = 1;
 	public Weapon startingWeapon;
@@ -20,6 +21,8 @@ public class GameManager : MonoBehaviour {
 	private bool paused = false;
 	public UIController ui;
 	private CameraController cam;
+	public AllyController selectedAlly = null;
+	public GameObject selectRing = null;
 
 	private int modeIndex = 0;
 	private string[] modes = {"Combat", "Command", "Build"};
@@ -70,12 +73,29 @@ public class GameManager : MonoBehaviour {
 			}
 		}
 
+		//Updated selectedAlly
+		if (selectedAlly != null) {
+			if (selectRing == null) {
+				string load = "Other/SelectRing";
+				selectRing = (GameObject) Instantiate(Resources.Load (load, typeof(GameObject)) as GameObject);
+			}
+			selectRing.transform.position = new Vector3 (selectedAlly.transform.position.x, selectedAlly.transform.position.y, 0);
+		}
+
 		//Destroy each object in the kill list and clear it
 		foreach (PersonController p in personKill) {
 			if (p.gameObject.tag == "Enemy") {
 				enemies.Remove ((EnemyController) p);
+				if (targetedEnemies.IndexOf ((EnemyController) p) >= 0) {
+					targetedEnemies.Remove ((EnemyController) p);
+				}
 			} else if (p.gameObject.tag == "Ally") {
 				people.Remove ((AllyController) p);
+				if (p == selectedAlly) {
+					selectedAlly = null;
+					Destroy (selectRing);
+					selectRing = null;
+				}
 			}
 			Destroy (p.gameObject);
 		}
@@ -104,12 +124,24 @@ public class GameManager : MonoBehaviour {
 		if (Input.GetKeyDown (KeyCode.Space)) {
 			modeIndex = (modeIndex + 1) % modes.Length;
 			playerMode = modes[modeIndex];
-			ui.modeText.text = playerMode;
-			//print (playerMode);
+			selectedAlly = null;
+			Destroy (selectRing);
+			selectRing = null;
 		}
 		if (Input.GetKeyDown (KeyCode.Escape)) {
 			paused = !paused;
 		}
+	}
+
+	public GameObject getClickedObject() {
+		//Converting Mouse Pos to 2D (vector2) World Pos
+		Vector2 rayPos = new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y);
+		RaycastHit2D hit=Physics2D.Raycast(rayPos, Vector2.zero, 0f);
+		if (hit) {
+			Debug.Log (hit.transform.name);
+			return hit.transform.gameObject;
+		}
+		else return null;
 	}
 
 	void spawnPlayer() {
@@ -121,6 +153,8 @@ public class GameManager : MonoBehaviour {
 		AllyController a = (AllyController)Instantiate (ally);
 		people.Add (a);
 		a.gm = this;
+		a.personName = "Billy";
+		a.transform.position = new Vector3 (2, 0, 0);
 	}
 
 	void spawnEnemy() {
@@ -129,5 +163,23 @@ public class GameManager : MonoBehaviour {
 		e.transform.position = new Vector3 (0, 0, 0);
 		e.spawn = enemy;
 		enemies.Add (e);
+	}
+
+	public void targetEnemy(EnemyController e) {
+		if (targetedEnemies.IndexOf (e) >= 0) {
+			targetedEnemies.Remove (e);
+			if (e.targetTag != null) {
+				Destroy (e.targetTag);
+				e.targetTag = null;
+			}
+		} else {
+			targetedEnemies.Add (e);
+			if (e.targetTag != null) {
+				Destroy (e.targetTag);
+			}
+			e.targetTag = (GameObject) Instantiate (Resources.Load ("Other/TargetTag", typeof(GameObject)) as GameObject);
+			e.targetTag.transform.parent = e.transform;
+			e.targetTag.transform.position = new Vector3 (e.transform.position.x, e.transform.position.y + 0.5f, 0);
+		}
 	}
 }

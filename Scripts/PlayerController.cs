@@ -73,11 +73,31 @@ public class PlayerController : PersonController {
 				}
 
 			}
-			if (Input.GetMouseButton (1)) { //Player right-clicks in Combat mode
-				
+			if (Input.GetMouseButtonDown (1)) { //Player right-clicks in Combat mode
+				GameObject obj = gm.getClickedObject ();
+				if (obj != null) {
+					if (obj.tag == "Enemy") {
+						//Target enemy
+						Debug.Log("Enemy targeted");
+						gm.targetEnemy (obj.GetComponent<EnemyController> ());
+					}
+				}
 			}
 		} else if (gm.playerMode == "Command") { //Get actions for Command mode
-            
+			if (Input.GetMouseButtonDown(0)) {
+				GameObject obj = gm.getClickedObject ();
+				if (obj != null) {
+					if (obj.tag == "Ally") {
+						gm.selectedAlly = obj.GetComponent<AllyController> ();
+					} else {
+						gm.selectedAlly = null;
+						if (gm.selectRing != null) {
+							Destroy (gm.selectRing);
+						}
+						gm.selectRing = null;
+					}
+				}
+			}
 		} else if (gm.playerMode == "Build") { //Get actions for Build mode
 
 		}
@@ -86,7 +106,7 @@ public class PlayerController : PersonController {
 	void addAlly(AllyController ally) {
 		allies.Add (ally);
 		ally.leader = this;
-		ally.mode = AllyController.Mode.standstill;
+		ally.mode = "Standstill";
 	}
 
 	void removeAlly(AllyController ally) {

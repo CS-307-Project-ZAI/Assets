@@ -22,7 +22,7 @@ public class Weapon : MonoBehaviour {
 	[HideInInspector]
 	public int currentLoaded;
 
-	float reloadTimer = 0.0f;
+	public float reloadTimer = 0.0f;
 
 	// Use this for initialization
 	void Start () {
