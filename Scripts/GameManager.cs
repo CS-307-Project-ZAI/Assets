@@ -18,9 +18,9 @@ public class GameManager : MonoBehaviour {
 	[HideInInspector]
 	public List<PersonController> personKill;
 	public List<Bullet> bulletKill;
-	private bool paused = false;
+	public bool paused = false;
 	public UIController ui;
-	private CameraController cam;
+	public CameraController cam;
 	public AllyController selectedAlly = null;
 	public GameObject selectRing = null;
 
@@ -41,7 +41,9 @@ public class GameManager : MonoBehaviour {
 		if (paused) {
 			if (Input.GetKeyDown (KeyCode.Escape)) {
 				paused = !paused;
+				cam.SetCustomCursor ();
 			}
+			ui.GMUpdate ();
 			return;
 		}
 		//Get Game Actions
@@ -130,6 +132,7 @@ public class GameManager : MonoBehaviour {
 		}
 		if (Input.GetKeyDown (KeyCode.Escape)) {
 			paused = !paused;
+			cam.SetCustomCursor ();
 		}
 	}
 

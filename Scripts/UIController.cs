@@ -14,6 +14,9 @@ public class UIController : MonoBehaviour {
 	RectTransform healthBar;
 
 	[HideInInspector]
+	RectTransform pauseMenu;
+	Image tint;
+
 	//Left info box
 	Text modeText;
 
@@ -30,12 +33,16 @@ public class UIController : MonoBehaviour {
 
 	//Health bar
 	public Text playerHealth;
-
+	bool settingsActive = false;
 
 	private string activeGUI = "";
 
 	public void GMStart() {
 		gm = FindObjectOfType<GameManager> ();
+
+		tint = transform.Find ("Tint").GetComponent<Image> ();
+		pauseMenu = transform.Find ("PauseMenu").GetComponent<RectTransform> ();
+
 		//infoBoxLeft = transform.Find ("Info Box Left").gameObject;
 		modeText = GameObject.Find ("Mode").GetComponent<Text>();
 
@@ -67,6 +74,15 @@ public class UIController : MonoBehaviour {
 	}
 
 	public void GMUpdate() {
+		if (gm.paused) {
+			tint.color = new Color (0, 0, 0, 0.8f);
+			pauseMenu.gameObject.SetActive (true);
+
+			return;
+		}
+		tint.color = new Color (0.5f, 0.5f, 0.5f, 0.0f);
+		pauseMenu.gameObject.SetActive (false);
+
 		if (activeGUI != gm.playerMode) {
 			activeGUI = gm.playerMode;
 			switch (activeGUI) {
@@ -142,5 +158,19 @@ public class UIController : MonoBehaviour {
 		if (gm.selectedAlly != null) {
 			gm.selectedAlly.aggression = target.options[target.value].text;
 		}
+	}
+
+	public void unpauseGame() {
+		gm.paused = false;
+		gm.cam.SetCustomCursor ();
+	}
+
+	public void settingsMenu() {
+		settingsActive = true;
+	}
+
+	public void quitGame() {
+		Debug.Log ("Quit");
+		Application.Quit ();
 	}
 }
