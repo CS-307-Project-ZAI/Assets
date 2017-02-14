@@ -26,6 +26,10 @@ public class EnemyController : PersonController {
 		getMovement ();
 		getRotation ();
 		checkSpawnTime ();
+		if (targetTag != null) {
+			targetTag.transform.rotation = Quaternion.identity;
+			targetTag.transform.position = new Vector3 (transform.position.x, transform.position.y + 0.5f, 0);
+		}
 	}
 
 	void getMovement() {

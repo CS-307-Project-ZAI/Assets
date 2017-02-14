@@ -9,6 +9,7 @@ public class GameManager : MonoBehaviour {
 	public List<AllyController> people;
 	public EnemyController enemy;
 	public List<EnemyController> enemies;
+	public List<EnemyController> targetedEnemies;
 	public List<Bullet> bullets;
 	public int spawnAmount = 1;
 	public Weapon startingWeapon;
@@ -21,7 +22,7 @@ public class GameManager : MonoBehaviour {
 	public UIController ui;
 	private CameraController cam;
 	public AllyController selectedAlly = null;
-	private GameObject selectRing = null;
+	public GameObject selectRing = null;
 
 	private int modeIndex = 0;
 	private string[] modes = {"Combat", "Command", "Build"};
@@ -85,6 +86,9 @@ public class GameManager : MonoBehaviour {
 		foreach (PersonController p in personKill) {
 			if (p.gameObject.tag == "Enemy") {
 				enemies.Remove ((EnemyController) p);
+				if (targetedEnemies.IndexOf ((EnemyController) p) >= 0) {
+					targetedEnemies.Remove ((EnemyController) p);
+				}
 			} else if (p.gameObject.tag == "Ally") {
 				people.Remove ((AllyController) p);
 				if (p == selectedAlly) {
@@ -127,25 +131,14 @@ public class GameManager : MonoBehaviour {
 		if (Input.GetKeyDown (KeyCode.Escape)) {
 			paused = !paused;
 		}
-		if (playerMode == "Command" && Input.GetMouseButtonDown(0)) {
-			GameObject obj = getClickedObject ();
-			if (obj != null && obj.tag == "Ally") {
-				selectedAlly = obj.GetComponent<AllyController> ();
-			} else {
-				selectedAlly = null;
-				if (selectRing != null) {
-					Destroy (selectRing);
-				}
-				selectRing = null;
-			}
-		}
 	}
 
-	GameObject getClickedObject() {
+	public GameObject getClickedObject() {
 		//Converting Mouse Pos to 2D (vector2) World Pos
 		Vector2 rayPos = new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y);
 		RaycastHit2D hit=Physics2D.Raycast(rayPos, Vector2.zero, 0f);
 		if (hit) {
+			Debug.Log (hit.transform.name);
 			return hit.transform.gameObject;
 		}
 		else return null;
@@ -160,6 +153,8 @@ public class GameManager : MonoBehaviour {
 		AllyController a = (AllyController)Instantiate (ally);
 		people.Add (a);
 		a.gm = this;
+		a.personName = "Billy";
+		a.transform.position = new Vector3 (2, 0, 0);
 	}
 
 	void spawnEnemy() {
@@ -168,5 +163,23 @@ public class GameManager : MonoBehaviour {
 		e.transform.position = new Vector3 (0, 0, 0);
 		e.spawn = enemy;
 		enemies.Add (e);
+	}
+
+	public void targetEnemy(EnemyController e) {
+		if (targetedEnemies.IndexOf (e) >= 0) {
+			targetedEnemies.Remove (e);
+			if (e.targetTag != null) {
+				Destroy (e.targetTag);
+				e.targetTag = null;
+			}
+		} else {
+			targetedEnemies.Add (e);
+			if (e.targetTag != null) {
+				Destroy (e.targetTag);
+			}
+			e.targetTag = (GameObject) Instantiate (Resources.Load ("Other/TargetTag", typeof(GameObject)) as GameObject);
+			e.targetTag.transform.parent = e.transform;
+			e.targetTag.transform.position = new Vector3 (e.transform.position.x, e.transform.position.y + 0.5f, 0);
+		}
 	}
 }

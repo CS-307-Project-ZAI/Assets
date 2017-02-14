@@ -21,9 +21,12 @@ public class UIController : MonoBehaviour {
 	Text weapon;
 	Text ammoPool;
 	Text ammoLeft;
+	RectTransform reloadBar;
 
 	//Command box right
 	Text selected;
+	Dropdown selectedMode;
+	Dropdown selectedAggression;
 
 	//Health bar
 	public Text playerHealth;
@@ -41,10 +44,19 @@ public class UIController : MonoBehaviour {
 		weapon = combatBoxRight.transform.Find ("Weapon").GetComponent<Text>();
 		ammoPool = combatBoxRight.transform.Find ("AmmoPool").GetComponent<Text> ();
 		ammoLeft = combatBoxRight.transform.Find ("AmmoLeft").GetComponent<Text> ();
+		reloadBar = combatBoxRight.transform.Find ("ReloadBar").GetComponent<RectTransform> ();
 
 		//Command box right
 		commandBoxRight = transform.Find ("Command Box Right").gameObject;
 		selected = commandBoxRight.transform.Find ("Selected").GetComponent<Text> ();
+		selectedMode = commandBoxRight.transform.Find ("Mode_Dropdown").GetComponent<Dropdown> ();
+		selectedAggression = commandBoxRight.transform.Find ("Aggression_Dropdown").GetComponent<Dropdown> ();
+		selectedMode.onValueChanged.AddListener(delegate {
+			DropdownChangeMode(selectedMode);
+		});
+		selectedAggression.onValueChanged.AddListener(delegate {
+			DropdownChangeAggression(selectedAggression);
+		});
 
 		//Build box right
 		buildBoxRight = transform.Find ("Build Box Right").gameObject;
@@ -87,12 +99,24 @@ public class UIController : MonoBehaviour {
 			} else {
 				ammoPool.text = gm.player.weapons [gm.player.currentWeapon].ammoPool.ToString ();
 			}
+			if (gm.player.reloading) {
+				float reloadWidth = (gm.player.weapons [gm.player.currentWeapon].reloadTimer / gm.player.weapons [gm.player.currentWeapon].reloadTime) * 180;
+				reloadBar.sizeDelta = new Vector2 (reloadWidth, 20);
+			} else {
+				reloadBar.sizeDelta = new Vector2 (0, 20);
+			}
 			break;
 		case "Command":
 			if (gm.selectedAlly != null) {
-				selected.text = gm.selectedAlly.name;
+				selected.text = gm.selectedAlly.personName;
+				selectedMode.value = gm.selectedAlly.modes.IndexOf (gm.selectedAlly.mode);
+				selectedAggression.value = gm.selectedAlly.aggressions.IndexOf (gm.selectedAlly.aggression);
+				selectedMode.interactable = true;
+				selectedAggression.interactable = true;
 			} else {
 				selected.text = "None";
+				selectedMode.interactable = false;
+				selectedAggression.interactable = false;
 			}
 			break;
 		case "Build":
@@ -101,10 +125,22 @@ public class UIController : MonoBehaviour {
 
 		//Update Health Bar
 		playerHealth.text = gm.player.health.ToString();
-		float width = ((float)gm.player.health / 50.0f) * 290;
-		if (width < 0) {
-			width = 0.0f;
+		float healthWidth = ((float)gm.player.health / 50.0f) * 290;
+		if (healthWidth < 0) {
+			healthWidth = 0.0f;
 		}
-		healthBar.sizeDelta = new Vector2 (width, 30);
+		healthBar.sizeDelta = new Vector2 (healthWidth, 30);
+	}
+
+	private void DropdownChangeMode(Dropdown target) {
+		if (gm.selectedAlly != null) {
+			gm.selectedAlly.mode = target.options[target.value].text;
+		}
+	}
+
+	private void DropdownChangeAggression(Dropdown target) {
+		if (gm.selectedAlly != null) {
+			gm.selectedAlly.aggression = target.options[target.value].text;
+		}
 	}
 }
