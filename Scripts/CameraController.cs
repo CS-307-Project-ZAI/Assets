@@ -15,7 +15,7 @@ public class CameraController : MonoBehaviour {
 	void Start() 
 	{ 
 		gm = FindObjectOfType<GameManager> ();
-		Invoke("SetCustomCursor", 0.5f); 
+		SetCustomCursor ();
 	} 
 
 	public void GMUpdate() {

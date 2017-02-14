@@ -20,6 +20,8 @@ public class GameManager : MonoBehaviour {
 	private bool paused = false;
 	public UIController ui;
 	private CameraController cam;
+	public AllyController selectedAlly = null;
+	private GameObject selectRing = null;
 
 	private int modeIndex = 0;
 	private string[] modes = {"Combat", "Command", "Build"};
@@ -70,12 +72,26 @@ public class GameManager : MonoBehaviour {
 			}
 		}
 
+		//Updated selectedAlly
+		if (selectedAlly != null) {
+			if (selectRing == null) {
+				string load = "Other/SelectRing";
+				selectRing = (GameObject) Instantiate(Resources.Load (load, typeof(GameObject)) as GameObject);
+			}
+			selectRing.transform.position = new Vector3 (selectedAlly.transform.position.x, selectedAlly.transform.position.y, 0);
+		}
+
 		//Destroy each object in the kill list and clear it
 		foreach (PersonController p in personKill) {
 			if (p.gameObject.tag == "Enemy") {
 				enemies.Remove ((EnemyController) p);
 			} else if (p.gameObject.tag == "Ally") {
 				people.Remove ((AllyController) p);
+				if (p == selectedAlly) {
+					selectedAlly = null;
+					Destroy (selectRing);
+					selectRing = null;
+				}
 			}
 			Destroy (p.gameObject);
 		}
@@ -104,12 +120,35 @@ public class GameManager : MonoBehaviour {
 		if (Input.GetKeyDown (KeyCode.Space)) {
 			modeIndex = (modeIndex + 1) % modes.Length;
 			playerMode = modes[modeIndex];
-			ui.modeText.text = playerMode;
-			//print (playerMode);
+			selectedAlly = null;
+			Destroy (selectRing);
+			selectRing = null;
 		}
 		if (Input.GetKeyDown (KeyCode.Escape)) {
 			paused = !paused;
 		}
+		if (playerMode == "Command" && Input.GetMouseButtonDown(0)) {
+			GameObject obj = getClickedObject ();
+			if (obj != null && obj.tag == "Ally") {
+				selectedAlly = obj.GetComponent<AllyController> ();
+			} else {
+				selectedAlly = null;
+				if (selectRing != null) {
+					Destroy (selectRing);
+				}
+				selectRing = null;
+			}
+		}
+	}
+
+	GameObject getClickedObject() {
+		//Converting Mouse Pos to 2D (vector2) World Pos
+		Vector2 rayPos = new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y);
+		RaycastHit2D hit=Physics2D.Raycast(rayPos, Vector2.zero, 0f);
+		if (hit) {
+			return hit.transform.gameObject;
+		}
+		else return null;
 	}
 
 	void spawnPlayer() {
