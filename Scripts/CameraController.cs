@@ -36,20 +36,25 @@ public class CameraController : MonoBehaviour {
 		this.ccEnabled = false; 
 	} 
 
-	private void SetCustomCursor() 
+	public void SetCustomCursor() 
 	{   
-		switch (gm.playerMode) {
-		case "Combat":
-			Cursor.SetCursor (combatCursor, new Vector2(combatCursor.width / 2.0f, combatCursor.height / 2.0f), CursorMode.Auto); 
-			break;
-		case "Command":
-			Cursor.SetCursor (commandCursor, Vector2.zero, CursorMode.Auto);
-			break;
-		case "Build":
-			Cursor.SetCursor (buildCursor, Vector2.zero, CursorMode.Auto);
-			break;
+		if (gm.paused) {
+			Cursor.SetCursor (null, Vector2.zero, CursorMode.Auto);
+			activeCursor = "Default";
+		} else {
+			switch (gm.playerMode) {
+			case "Combat":
+				Cursor.SetCursor (combatCursor, new Vector2 (combatCursor.width / 2.0f, combatCursor.height / 2.0f), CursorMode.Auto); 
+				break;
+			case "Command":
+				Cursor.SetCursor (commandCursor, Vector2.zero, CursorMode.Auto);
+				break;
+			case "Build":
+				Cursor.SetCursor (buildCursor, Vector2.zero, CursorMode.Auto);
+				break;
+			}
+			activeCursor = gm.playerMode;
 		}
-		activeCursor = gm.playerMode;
 		this.ccEnabled = true; 
 	} 
 }
