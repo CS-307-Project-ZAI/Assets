@@ -14,6 +14,7 @@ public class GameManager : MonoBehaviour {
 	public int spawnAmount = 1;
 	public Weapon startingWeapon;
 	public string playerMode = "Combat";
+	public string difficulty = "Easy";
 
 	[HideInInspector]
 	public List<PersonController> personKill;

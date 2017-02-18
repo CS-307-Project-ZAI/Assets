@@ -32,8 +32,15 @@ public class UIController : MonoBehaviour {
 	Dropdown selectedAggression;
 
 	//Health bar
-	public Text playerHealth;
+	Text playerHealth;
+
+	//Settings Menu
 	bool settingsActive = false;
+	RectTransform settingsMenu;
+	Button easyButton;
+	Button mediumButton;
+	Button hardButton;
+	Slider volumeSlider;
 
 	private string activeGUI = "";
 
@@ -42,6 +49,12 @@ public class UIController : MonoBehaviour {
 
 		tint = transform.Find ("Tint").GetComponent<Image> ();
 		pauseMenu = transform.Find ("PauseMenu").GetComponent<RectTransform> ();
+		settingsMenu = transform.Find ("SettingsMenu").GetComponent<RectTransform> ();
+		easyButton = settingsMenu.transform.Find ("Difficulty_Easy").GetComponent<Button> ();
+		mediumButton = settingsMenu.transform.Find ("Difficulty_Medium").GetComponent<Button> ();
+		hardButton = settingsMenu.transform.Find ("Difficulty_Hard").GetComponent<Button> ();
+		volumeSlider = settingsMenu.transform.Find ("Volume Slider").GetComponent<Slider> ();
+		AudioListener.volume = volumeSlider.value;
 
 		//infoBoxLeft = transform.Find ("Info Box Left").gameObject;
 		modeText = GameObject.Find ("Mode").GetComponent<Text>();
@@ -76,12 +89,35 @@ public class UIController : MonoBehaviour {
 	public void GMUpdate() {
 		if (gm.paused) {
 			tint.color = new Color (0, 0, 0, 0.8f);
-			pauseMenu.gameObject.SetActive (true);
-
+			if (settingsActive) {
+				pauseMenu.gameObject.SetActive (false);
+				settingsMenu.gameObject.SetActive (true);
+				switch (gm.difficulty) {
+				case "Easy":
+					easyButton.interactable = false;
+					mediumButton.interactable = true;
+					hardButton.interactable = true;
+					break;
+				case "Medium":
+					easyButton.interactable = true;
+					mediumButton.interactable = false;
+					hardButton.interactable = true;
+					break;
+				case "Hard":
+					easyButton.interactable = true;
+					mediumButton.interactable = true;
+					hardButton.interactable = false;
+					break;
+				}
+			} else {
+				pauseMenu.gameObject.SetActive (true);
+				settingsMenu.gameObject.SetActive (false);
+			}
 			return;
 		}
 		tint.color = new Color (0.5f, 0.5f, 0.5f, 0.0f);
 		pauseMenu.gameObject.SetActive (false);
+		settingsMenu.gameObject.SetActive (false);
 
 		if (activeGUI != gm.playerMode) {
 			activeGUI = gm.playerMode;
@@ -165,12 +201,32 @@ public class UIController : MonoBehaviour {
 		gm.cam.SetCustomCursor ();
 	}
 
-	public void settingsMenu() {
+	public void openSettings() {
 		settingsActive = true;
+	}
+
+	public void closeSettings() {
+		settingsActive = false;
 	}
 
 	public void quitGame() {
 		Debug.Log ("Quit");
 		Application.Quit ();
+	}
+
+	public void setDifficultyEasy() {
+		gm.difficulty = "Easy";
+	}
+
+	public void setDifficultyMedium() {
+		gm.difficulty = "Medium";
+	}
+
+	public void setDifficultyHard() {
+		gm.difficulty = "Hard";
+	}
+
+	public void changeVolume() {
+		AudioListener.volume = volumeSlider.value;
 	}
 }
