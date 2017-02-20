@@ -1,22 +1,37 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController : PersonController {
+public class PlayerController : MonoBehaviour {
 
-	public List<AllyController> allies;
+	public float moveSpeed = 0.2f;
+	public List<Weapon> weapons;
+	public int health = 50;
+	public GameManager gm;
 
-	new void Start() {
-		base.Start ();
+	[HideInInspector]
+	public float rotationFix = 45.0f;
+	int currentWeapon = 0;
+	float attackTimer = 0.0f;
+	public bool reloading = false;
+
+	// Use this for initialization
+	void Start () {
+		//Give player starting weapon
+		Weapon w = (Weapon)Instantiate (gm.startingWeapon);
+		w.owner = this;
+		string load = "AmmoTypes/" + w.ammoType;
+		print (load);
+		w.bullet = Resources.Load (load, typeof(Bullet)) as Bullet; 
+		print (w.bullet);
+		weapons.Add (w);
+		w.transform.parent = gameObject.transform;
 	}
-
-	// GMUpdate is called by the GameManager once per frame
-	public void GMUpdate () {
+	
+	// Update is called once per frame
+	void Update () {
 		getMovement ();
 		getRotation ();
-		foreach (Weapon w in weapons) {
-			w.ControlledUpdate ();
-		}
 		if (weapons.Count > 0) {
 			getActions ();
 		}
@@ -36,86 +51,59 @@ public class PlayerController : PersonController {
 	}
 
 	void getActions() {
-		if (gm.playerMode == "Combat") { //Get actions for Combat mode
-			if (!reloading) {
-				//Changing Weapons
-				if (Input.GetKeyDown (KeyCode.Alpha1) && weapons.Count > 0) {
-					currentWeapon = 0;
-					return;
-				} else if (Input.GetKeyDown (KeyCode.Alpha2) && weapons.Count > 1) {
-					currentWeapon = 1;
-					return;
-				} else if (Input.GetKeyDown (KeyCode.Alpha3) && weapons.Count > 2) {
-					currentWeapon = 2;
-					return;
-				}
+		if (!reloading) {
+			//Changing Weapons
+			if (Input.GetKeyDown (KeyCode.Alpha1) && weapons.Count > 0) {
+				currentWeapon = 0;
+				return;
+			} else if (Input.GetKeyDown (KeyCode.Alpha2) && weapons.Count > 1) {
+				currentWeapon = 1;
+				return;
+			} else if (Input.GetKeyDown (KeyCode.Alpha3) && weapons.Count > 2) {
+				currentWeapon = 2;
+				return;
+			}
 			
-				if (Input.GetMouseButton (0)) {
-					fireWeapon ();
-				} else {
-					if (attackTimer < weapons [currentWeapon].fireRate) {
-						attackTimer += Time.deltaTime;
-					} else {
-						attackTimer = weapons [currentWeapon].fireRate;
-					}
-				}
-
-				if ((Input.GetKeyDown (KeyCode.R) || (Input.GetMouseButton (0) && weapons [currentWeapon].currentLoaded == 0))
-				    && (weapons [currentWeapon].ammoPool > 0 || weapons [currentWeapon].ammoPool == -1)
-				    && weapons [currentWeapon].clipSize != -1) {
-					reloading = true;
-				}
+			if (Input.GetMouseButton (0)) {
+				fireWeapon ();
 			} else {
-				if (Input.GetMouseButton (0) && weapons [currentWeapon].currentLoaded > 0) {
-					reloading = false;
-					weapons [currentWeapon].SendMessage ("interruptReload");
-					fireWeapon ();
+				if (attackTimer < weapons [currentWeapon].fireRate) {
+					attackTimer += Time.deltaTime;
+				} else {
+					attackTimer = weapons [currentWeapon].fireRate;
 				}
+			}
 
+			if ((Input.GetKeyDown (KeyCode.R) || (Input.GetMouseButton(0) && weapons[currentWeapon].currentLoaded == 0))
+				&& (weapons[currentWeapon].ammoPool > 0 || weapons[currentWeapon].ammoPool == -1)
+				&& weapons[currentWeapon].clipSize != -1) {
+				reloading = true;
 			}
-			if (Input.GetMouseButtonDown (1)) { //Player right-clicks in Combat mode
-				GameObject obj = gm.getClickedObject ();
-				if (obj != null) {
-					if (obj.tag == "Enemy") {
-						//Target enemy
-						Debug.Log("Enemy targeted");
-						gm.targetEnemy (obj.GetComponent<EnemyController> ());
-					}
-				}
+		} else {
+			if (Input.GetMouseButton (0) && weapons[currentWeapon].currentLoaded > 0) {
+				reloading = false;
+				weapons [currentWeapon].SendMessage ("interruptReload");
+				fireWeapon ();
 			}
-		} else if (gm.playerMode == "Command") { //Get actions for Command mode
-			if (Input.GetMouseButtonDown(0)) {
-				GameObject obj = gm.getClickedObject ();
-				if (obj != null) {
-					if (obj.tag == "Ally") {
-						gm.selectedAlly = obj.GetComponent<AllyController> ();
-					} else {
-						gm.selectedAlly = null;
-						if (gm.selectRing != null) {
-							Destroy (gm.selectRing);
-						}
-						gm.selectRing = null;
-					}
-				}
-			}
-		} else if (gm.playerMode == "Build") { //Get actions for Build mode
-
 		}
 	}
 
-	void addAlly(AllyController ally) {
-		allies.Add (ally);
-		ally.leader = this;
-		ally.mode = "Standstill";
+	void fireWeapon() {
+		attackTimer += Time.deltaTime;
+		if (attackTimer > weapons [currentWeapon].fireRate && weapons [currentWeapon].currentLoaded > 0) {
+			weapons [currentWeapon].SendMessage ("fireWeapon");
+			attackTimer = 0.0f;
+		}
 	}
 
-	void removeAlly(AllyController ally) {
-		allies.Remove (ally);
-	}
-
-	public override void aliveCheck() {
+	void aliveCheck() {
 		if (health <= 0) {
 			print ("Game Over!");
 		}
+	}
+
+	void ApplyDamage(int dmg) {
+		this.health -= dmg;
+		aliveCheck ();
 	}
 }

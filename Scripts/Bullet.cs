@@ -8,24 +8,21 @@ public class Bullet : MonoBehaviour {
 
 	[HideInInspector]
 	public Vector3 direction;
-	public bool kill = false;
-
-	public PersonController owner;
-	public float damage = 10.0f;
-
+	public PlayerController player;
+	public float damage = 5.0f;
 	public bool passthrough = false;
 
 	// Use this for initialization
 	void Start () {
-
+		player = FindObjectOfType<PlayerController> ();
 	}
 	
 	// Update is called once per frame
-	public void GMUpdate () {
+	void Update () {
 		//Check if out of bounds
-		if (Mathf.Abs (owner.transform.position.x - transform.position.x) > maxDistance 
-			|| Mathf.Abs (owner.transform.position.y - transform.position.y) > maxDistance) {
-			kill = true;
+		if (Mathf.Abs (player.transform.position.x - transform.position.x) > maxDistance 
+			|| Mathf.Abs (player.transform.position.y - transform.position.y) > maxDistance) {
+			Destroy (gameObject);
 			return;
 		}
 		getMovement ();
@@ -39,11 +36,11 @@ public class Bullet : MonoBehaviour {
 		if (col.gameObject.tag == "Enemy") {
 			col.gameObject.SendMessage ("ApplyDamage", damage);
 			if (!passthrough) {
-				kill = true;
+				Destroy (gameObject);
 			}
 		}
 		if (col.gameObject.tag == "Block") {
-			kill = true;
+			Destroy (gameObject);
 		}
 	}
 }
