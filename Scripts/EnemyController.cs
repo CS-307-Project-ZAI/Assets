@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyController : MonoBehaviour {
+public class EnemyController : PersonController {
 
-	public int health = 50;
-	public float moveSpeed = 0.5f;
 	public PlayerController target;
 	public float spawnRate = 5.0f;
 	public float attackRate = 1.0f;
@@ -14,23 +12,24 @@ public class EnemyController : MonoBehaviour {
 	public EnemyController spawn;
 
 	float spawnTimer = 0.0f;
-	float attackTimer = 0.0f;
-
-	GameManager gm;
 
 	// Use this for initialization
-	void Start () {
+	new void Start () {
 		spawnTimer = 0.0f;
 		attackTimer = 0.0f;
 		gm = FindObjectOfType<GameManager> ();
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	public void GMUpdate () {
 		attackTimer += Time.deltaTime;
 		getMovement ();
 		getRotation ();
 		checkSpawnTime ();
+		if (targetTag != null) {
+			targetTag.transform.rotation = Quaternion.identity;
+			targetTag.transform.position = new Vector3 (transform.position.x, transform.position.y + 0.5f, 0);
+		}
 	}
 
 	void getMovement() {
@@ -63,20 +62,13 @@ public class EnemyController : MonoBehaviour {
 		gm.enemies.Add (e);
 	}
 
-	void aliveCheck() {
-		if (health <= 0) {
-			gm.enemies.Remove (this);
-			Destroy (gameObject);
-		}
-	}
-
-	void ApplyDamage(int dmg) {
-		this.health -= dmg;
-		aliveCheck ();
-	}
-
 	void OnTriggerStay2D(Collider2D col) {
 		if (col.gameObject.tag == "Player") {
+			if (attackTimer >= attackRate) {
+				col.gameObject.SendMessage ("ApplyDamage", damage);
+				attackTimer = 0.0f;
+			}
+		} else if (col.gameObject.tag == "Ally") {
 			if (attackTimer >= attackRate) {
 				col.gameObject.SendMessage ("ApplyDamage", damage);
 				attackTimer = 0.0f;
