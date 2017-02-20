@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class PersonController : MonoBehaviour {
 
-	public float moveSpeed = 0.2f;
+    
+    public float moveSpeed = 0.2f;
 	public List<Weapon> weapons;
 	public int health = 50;
 	public GameManager gm;
@@ -15,6 +16,7 @@ public class PersonController : MonoBehaviour {
 
 	protected int currentWeapon = 0;
 	protected float attackTimer = 0.0f;
+    
 
 	protected void Start() {
 		//Give person starting weapon
@@ -53,4 +55,6 @@ public class PersonController : MonoBehaviour {
 			print ("Game Over!");
 		}
 	}
+
+    
 }

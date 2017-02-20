@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class EnemyController : PersonController {
 
-	public PlayerController target;
-	public float spawnRate = 5.0f;
+    public PlayerController target;
+    public float spawnRate = 5.0f;
 	public float attackRate = 1.0f;
 	public int spawnAmount = 1;
 	public int damage = 2;
@@ -15,9 +15,10 @@ public class EnemyController : PersonController {
 	public bool kill = false;
 
 	float spawnTimer = 0.0f;
+    public PathFinding pathfinder;
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start () {
 		spawnTimer = 0.0f;
 		attackTimer = 0.0f;
 		gm = FindObjectOfType<GameManager> ();
