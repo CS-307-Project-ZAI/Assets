@@ -6,15 +6,15 @@ public class EnemyController : PersonController {
 
     public PlayerController target;
     public float spawnRate = 5.0f;
-	public float attackRate = 1.0f;
-	public int spawnAmount = 1;
-	public int damage = 2;
-	public EnemyController spawn;
+    public float attackRate = 1.0f;
+    public int spawnAmount = 1;
+    public int damage = 2;
+    public EnemyController spawn;
 
-	[HideInInspector]
-	public bool kill = false;
+    [HideInInspector]
+    public bool kill = false;
 
-	float spawnTimer = 0.0f;
+    float spawnTimer = 0.0f;
     public PathFinding pathfinder;
 
     // Use this for initialization
