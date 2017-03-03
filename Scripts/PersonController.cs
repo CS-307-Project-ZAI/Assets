@@ -22,6 +22,7 @@ public class PersonController : MonoBehaviour {
 	public GameObject targetTag = null;
 	public float pathFindTimer = 0.0f;
 	public float pathRefreshTime = 0.0001f;
+	public bool followingPath = false;
 
 	public int currentWeapon = 0;
 	protected float attackTimer = 0.0f;
@@ -79,6 +80,7 @@ public class PersonController : MonoBehaviour {
 
 	IEnumerator FollowPath() {
 		if (path.Length > 0) {
+			followingPath = true;
 			targetIndex = 0;
 			Vector3 currentWaypoint = path [0];
 			while (true) {

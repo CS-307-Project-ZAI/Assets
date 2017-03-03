@@ -143,6 +143,7 @@ public class PlayerController : PersonController {
 					wall, new Vector3 (mousePos.x, mousePos.y, 0), 
 					Quaternion.LookRotation (Vector3.forward, mousePos - transform.position));
 				newWall.gm = gm;
+				gm.walls.Add (newWall);
 				if (wallRotation) {
 					newWall.transform.Rotate (new Vector3 (0, 0, 90.0f));
 				}
@@ -152,6 +153,7 @@ public class PlayerController : PersonController {
 				GameObject obj = gm.getClickedObject ();
 				if (obj != null) {
 					if (obj.tag == "Wall") {
+						gm.walls.Remove((Wall) obj.GetComponent<Wall>());
 						Destroy (obj);
 						gm.recreateGrid ();
 					}

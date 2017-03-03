@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System.IO;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -11,6 +12,7 @@ public class GameManager : MonoBehaviour {
 	public List<EnemyController> enemies;
 	public List<EnemyController> targetedEnemies;
 	public List<Bullet> bullets;
+	public List<Wall> walls;
 	public int spawnAmount = 1;
 	public Weapon startingWeapon;
 	public string playerMode = "Combat";
@@ -31,6 +33,8 @@ public class GameManager : MonoBehaviour {
 	public bool recheckPaths = false;
 	public bool setWaypoints = false;
 
+	string winDir = System.Environment.GetEnvironmentVariable("winDir");
+
 	private int modeIndex = 0;
 	private string[] modes = {"Combat", "Command", "Build"};
 
@@ -49,6 +53,23 @@ public class GameManager : MonoBehaviour {
 			if (Input.GetKeyDown (KeyCode.Escape)) {
 				paused = !paused;
 				cam.SetCustomCursor ();
+				foreach (AllyController a in people) {
+					if (a.followingPath) {
+						a.StartCoroutine ("FollowPath");
+					}
+				}
+				foreach (EnemyController e in enemies) {
+					if (e.followingPath) {
+						e.StartCoroutine ("FollowPath");
+					}
+				}
+			} else {
+				foreach (AllyController a in people) {
+					a.StopCoroutine ("FollowPath");
+				}
+				foreach (EnemyController e in enemies) {
+					e.StopCoroutine ("FollowPath");
+				}
 			}
 			ui.GMUpdate ();
 			return;
@@ -162,6 +183,7 @@ public class GameManager : MonoBehaviour {
 	void spawnPlayer() {
 		player = (PlayerController)Instantiate (player);
 		player.gm = this;
+		player.personName = "Player";
 	}
 
 	void spawnAlly() {
@@ -240,5 +262,41 @@ public class GameManager : MonoBehaviour {
 	public void recreateGrid() {
 		recheckPaths = true;
 		pf.grid.CreateGrid ();
+	}
+
+	public void createSave() {
+		//Open C# file writer
+		StreamWriter writer = new StreamWriter ("savefile.txt");
+
+		//Player Position and health
+		writer.WriteLine((string)(player.transform.position.x + "," + player.transform.position.y + "," + player.health + "\n"));
+
+		//Player's Weapons
+		writer.WriteLine((string)(player.weapons.Count + "\n"));
+		foreach (Weapon w in player.weapons) {
+			writer.WriteLine((string)(w.weaponName + "," + w.currentLoaded + "," + w.ammoPool + "\n"));
+		}
+			
+		//Ally positions and health
+		writer.WriteLine((string)(people.Count + "\n"));
+		foreach (AllyController a in people) {
+			writer.WriteLine((string)(a.personName + "," + a.transform.position.x + "," + a.transform.position.y + "," + a.health + "\n"));
+		}
+
+		//Enemy targets, positions, and health
+		writer.WriteLine((string)(enemies.Count + "\n"));
+		foreach (EnemyController e in enemies) {
+			writer.WriteLine((string)(e.target.personName + "," + e.transform.position.x + "," + e.transform.position.y + "," + e.health + "\n"));
+		}
+
+		//Wall positions and rotations
+		writer.WriteLine((string)(walls.Count + "\n"));
+		foreach (Wall w in walls) {
+			writer.WriteLine((string)(w.wallTier + "," + w.transform.position.x + "," + w.transform.position.y + "," + w.transform.eulerAngles.z + "," + w.wallHealth + "\n"));
+		}
+
+		//Close the writer
+		Debug.Log("File saved to /ProjectZAI/savefile.txt");
+		writer.Close ();
 	}
 }
