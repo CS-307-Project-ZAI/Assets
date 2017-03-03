@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class UIController : MonoBehaviour {
 
@@ -30,6 +31,13 @@ public class UIController : MonoBehaviour {
 	Text selected;
 	Dropdown selectedMode;
 	Dropdown selectedAggression;
+	Button waypointButton;
+	Button waypointButtonDelete;
+
+	//Build box right
+	Dropdown wallTierSeleted;
+	bool build = false;
+	public PlacementDetector pd;
 
 	//Health bar
 	Text playerHealth;
@@ -70,6 +78,8 @@ public class UIController : MonoBehaviour {
 		commandBoxRight = transform.Find ("Command Box Right").gameObject;
 		selected = commandBoxRight.transform.Find ("Selected").GetComponent<Text> ();
 		selectedMode = commandBoxRight.transform.Find ("Mode_Dropdown").GetComponent<Dropdown> ();
+		waypointButton = commandBoxRight.transform.Find ("Waypoint_Button").GetComponent<Button> ();
+		waypointButtonDelete = commandBoxRight.transform.Find ("Waypoint_Button_Delete").GetComponent<Button> ();
 		selectedAggression = commandBoxRight.transform.Find ("Aggression_Dropdown").GetComponent<Dropdown> ();
 		selectedMode.onValueChanged.AddListener(delegate {
 			DropdownChangeMode(selectedMode);
@@ -80,7 +90,8 @@ public class UIController : MonoBehaviour {
 
 		//Build box right
 		buildBoxRight = transform.Find ("Build Box Right").gameObject;
-
+		wallTierSeleted = buildBoxRight.transform.Find ("Wall_Tier_Dropdown").GetComponent<Dropdown> ();
+			
 		//Health bar
 		playerHealth = GameObject.Find ("Health Amount").GetComponent<Text> ();
 		healthBar = GameObject.Find ("Health Bar").GetComponent<RectTransform> ();
@@ -142,6 +153,15 @@ public class UIController : MonoBehaviour {
 
 		modeText.text = activeGUI;
 
+		if (!gm.build) {
+			this.build = false;
+			pd.gameObject.SetActive (false);
+		} else if (activeGUI != "Build") {
+			pd.gameObject.SetActive (false);
+		} else {
+			pd.gameObject.SetActive (true);
+		}
+
 		switch (activeGUI) {
 		case "Combat":
 			weapon.text = gm.player.weapons [gm.player.currentWeapon].weaponName;
@@ -165,13 +185,35 @@ public class UIController : MonoBehaviour {
 				selectedAggression.value = gm.selectedAlly.aggressions.IndexOf (gm.selectedAlly.aggression);
 				selectedMode.interactable = true;
 				selectedAggression.interactable = true;
+				waypointButton.interactable = true;
+				waypointButtonDelete.interactable = true;
 			} else {
 				selected.text = "None";
 				selectedMode.interactable = false;
 				selectedAggression.interactable = false;
+				waypointButton.interactable = false;
+				waypointButtonDelete.interactable = false;
 			}
 			break;
 		case "Build":
+			//Change Wall Selection
+			if (wallTierSeleted.captionText.text == "Tier 1 Wall") {
+				gm.player.wall.wallTier = "Tier1Wall";
+			} else if (wallTierSeleted.captionText.text == "Tier 2 Wall") {
+				gm.player.wall.wallTier = "Tier2Wall";
+			} else if (wallTierSeleted.captionText.text == "Tier 3 Wall") {
+				gm.player.wall.wallTier = "Tier3Wall";
+			}
+			if (gm.build) {
+				if (!this.build) {
+					this.build = true;
+					pd.gameObject.SetActive (true);
+				}
+				Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
+				pd.transform.position = new Vector3 (mousePos.x, mousePos.y, 0);
+				Vector3 playerRot = gm.player.transform.rotation.eulerAngles;
+				pd.transform.eulerAngles = new Vector3 (0, 0, playerRot.z - gm.player.rotationFix + (gm.player.wallRotation ? 90.0f : 0));
+			}
 			break;
 		}
 
