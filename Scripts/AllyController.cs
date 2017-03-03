@@ -97,30 +97,9 @@ public class AllyController : PersonController {
 				}
 			} else {
 				targetPos = transform.position;
+				followingPath = false;
 				StopCoroutine ("FollowPath");
 			}
-
-			/**
-			Vector3 direction = Vector3.zero;
-			if (positionFix) {
-				float dirX = previousPosition.x - transform.position.x;
-				float dirY = previousPosition.y - transform.position.y;
-				if (Mathf.Abs (dirX) < .001 && Mathf.Abs (dirY) < .001) {
-					positionFix = false;
-				}
-				Vector3 dir = new Vector3(dirX, dirY, 0);
-				direction = Vector3.ClampMagnitude(dir * 1000, moveSpeed) * Time.deltaTime;
-			} else {
-				direction = CalculatePointMovement ();
-				if (onPath) {
-					previousPosition = transform.position;
-				}
-			}
-			transform.position += direction;
-			if (direction != Vector3.zero) {
-				lookPoint = direction;
-			}
-			*/
 			break;
 		case "Wander":
 			break;
@@ -154,6 +133,13 @@ public class AllyController : PersonController {
 						closestMag = mag;
 						closestEnemy = e;
 					}
+				}
+			}
+			foreach (EnemyController e in gm.targetedEnemies) {
+				float mag = Vector3.Magnitude (new Vector3(e.transform.position.x - transform.position.x, e.transform.position.y - transform.position.y, 0));
+				if (closestMag > 1) {
+					closestMag = mag;
+					closestEnemy = e;
 				}
 			}
 			if (closestEnemy != null) {
