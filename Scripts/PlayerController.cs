@@ -1,13 +1,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayerController : PersonController {
 
 	public List<AllyController> allies;
+	public bool wallRotation = false;
+
 
 	new void Start() {
 		base.Start ();
+
 	}
 
 	// GMUpdate is called by the GameManager once per frame
@@ -84,22 +88,75 @@ public class PlayerController : PersonController {
 				}
 			}
 		} else if (gm.playerMode == "Command") { //Get actions for Command mode
-			if (Input.GetMouseButtonDown(0)) {
+			if (Input.GetMouseButtonDown (0)) {
+				if (gm.setWaypoints && gm.selectedAlly != null) {
+					Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
+					gm.selectedAlly.addWaypoint (mousePos);
+				} else {
+					GameObject obj = gm.getClickedObject ();
+					if (obj != null) {
+						if (obj.tag == "Ally") {
+							gm.selectedAlly = obj.GetComponent<AllyController> ();
+						} else if (!EventSystem.current.IsPointerOverGameObject ()) {
+							gm.deselectAlly ();
+						}
+					} else if (!EventSystem.current.IsPointerOverGameObject ()) {
+						gm.deselectAlly ();
+					}
+				}
+			} else if (Input.GetMouseButtonDown (1)) {
+				if (gm.selectedAlly != null) {
+					if (gm.setWaypoints) {
+						Debug.Log ("Removing waypoint");
+						GameObject obj = gm.getClickedObject ();
+						if (obj != null) {
+							if (obj.tag == "Waypoint") {
+								gm.selectedAlly.movePoints.Remove (obj.transform.position);
+								Destroy (obj);
+							}
+						}
+					} else {
+						gm.selectedAlly.commandMove (Camera.main.ScreenToWorldPoint (Input.mousePosition));
+					}
+				}
+			} else if (Input.GetKeyDown (KeyCode.Q) && gm.selectedAlly != null) {
+				gm.selectedAlly.removeLastWaypoint ();
+			} else if (Input.GetKeyDown (KeyCode.E) && gm.selectedAlly != null) {
+				gm.toggleWaypoints ();
+			}
+		} else if (gm.playerMode == "Build") { //Get actions for Build mode
+			//Will Change Wall according to UI Wall Tier selected in the dropdown
+			string loadWall = "Walls/" + wall.wallTier;
+			wall = Resources.Load(loadWall, typeof(Wall)) as Wall;
+			if (Input.GetKeyDown(KeyCode.R)) {
+				wallRotation = !wallRotation;
+			}
+			if (Input.GetKeyDown (KeyCode.E)) {
+				gm.toggleBuild (false);
+			}
+			if (Input.GetKeyDown (KeyCode.Q)) {
+				gm.toggleBuildDestroy ();
+			}
+			if (gm.build && Input.GetMouseButtonDown (0)) {
+				Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
+				Wall newWall = (Wall)Instantiate (
+					wall, new Vector3 (mousePos.x, mousePos.y, 0), 
+					Quaternion.LookRotation (Vector3.forward, mousePos - transform.position));
+				newWall.gm = gm;
+				if (wallRotation) {
+					newWall.transform.Rotate (new Vector3 (0, 0, 90.0f));
+				}
+				gm.toggleBuild (true);
+			}
+			if (gm.buildDestroy && Input.GetMouseButtonDown (0)) {
 				GameObject obj = gm.getClickedObject ();
 				if (obj != null) {
-					if (obj.tag == "Ally") {
-						gm.selectedAlly = obj.GetComponent<AllyController> ();
-					} else {
-						gm.selectedAlly = null;
-						if (gm.selectRing != null) {
-							Destroy (gm.selectRing);
-						}
-						gm.selectRing = null;
+					if (obj.tag == "Wall") {
+						Destroy (obj);
+						gm.recreateGrid ();
 					}
 				}
 			}
-		} else if (gm.playerMode == "Build") { //Get actions for Build mode
-
 		}
 	}
 

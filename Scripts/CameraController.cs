@@ -6,6 +6,8 @@ public class CameraController : MonoBehaviour {
 	public Texture2D combatCursor;
 	public Texture2D commandCursor;
 	public Texture2D buildCursor;
+	public Texture2D destroyCursor;
+	public Texture2D waypointCursor;
 
 	[HideInInspector]
 	public bool ccEnabled = false; 
@@ -47,10 +49,18 @@ public class CameraController : MonoBehaviour {
 				Cursor.SetCursor (combatCursor, new Vector2 (combatCursor.width / 2.0f, combatCursor.height / 2.0f), CursorMode.Auto); 
 				break;
 			case "Command":
-				Cursor.SetCursor (commandCursor, Vector2.zero, CursorMode.Auto);
+				if (gm.setWaypoints) {
+					Cursor.SetCursor (waypointCursor, new Vector2 (waypointCursor.width / 2.0f, waypointCursor.height / 2.0f), CursorMode.Auto); 
+				} else {
+					Cursor.SetCursor (commandCursor, Vector2.zero, CursorMode.Auto);
+				}
 				break;
 			case "Build":
-				Cursor.SetCursor (buildCursor, Vector2.zero, CursorMode.Auto);
+				if (gm.buildDestroy) {
+					Cursor.SetCursor (destroyCursor, new Vector2 (destroyCursor.width / 2.0f, destroyCursor.height / 2.0f), CursorMode.Auto);
+				} else {
+					Cursor.SetCursor (buildCursor, Vector2.zero, CursorMode.Auto);
+				}
 				break;
 			}
 			activeCursor = gm.playerMode;
