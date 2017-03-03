@@ -16,6 +16,7 @@ public class GameManager : MonoBehaviour {
 	public string playerMode = "Combat";
 	public string difficulty = "Easy";
 	public PathFinding pf;
+	public TriggersAttributes triggerAttribute;
 
 	[HideInInspector]
 	public List<PersonController> personKill;
