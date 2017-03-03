@@ -15,6 +15,7 @@ public class GameManager : MonoBehaviour {
 	public Weapon startingWeapon;
 	public string playerMode = "Combat";
 	public string difficulty = "Easy";
+	public PathFinding pf;
 
 	[HideInInspector]
 	public List<PersonController> personKill;
@@ -24,6 +25,10 @@ public class GameManager : MonoBehaviour {
 	public CameraController cam;
 	public AllyController selectedAlly = null;
 	public GameObject selectRing = null;
+	public bool build = false;
+	public bool buildDestroy = false;
+	public bool recheckPaths = false;
+	public bool setWaypoints = false;
 
 	private int modeIndex = 0;
 	private string[] modes = {"Combat", "Command", "Build"};
@@ -36,7 +41,7 @@ public class GameManager : MonoBehaviour {
 		spawnPlayer ();
 		spawnAlly ();
 	}
-	
+
 	// Update is called once per frame
 	void Update () {
 		if (paused) {
@@ -74,6 +79,7 @@ public class GameManager : MonoBehaviour {
 			if (a.kill) {
 				personKill.Add (a);
 			}
+			recheckPaths = false;
 		}
 
 		//Updated selectedAlly
@@ -81,12 +87,16 @@ public class GameManager : MonoBehaviour {
 			if (selectRing == null) {
 				string load = "Other/SelectRing";
 				selectRing = (GameObject) Instantiate(Resources.Load (load, typeof(GameObject)) as GameObject);
+				foreach (GameObject obj in selectedAlly.waypoints) {
+					obj.SetActive (true);
+				}
 			}
 			selectRing.transform.position = new Vector3 (selectedAlly.transform.position.x, selectedAlly.transform.position.y, 0);
 		}
 
 		//Destroy each object in the kill list and clear it
 		foreach (PersonController p in personKill) {
+			PathRequestManager.RemoveRequest (p);
 			if (p.gameObject.tag == "Enemy") {
 				enemies.Remove ((EnemyController) p);
 				if (targetedEnemies.IndexOf ((EnemyController) p) >= 0) {
@@ -185,5 +195,49 @@ public class GameManager : MonoBehaviour {
 			e.targetTag.transform.parent = e.transform;
 			e.targetTag.transform.position = new Vector3 (e.transform.position.x, e.transform.position.y + 0.5f, 0);
 		}
+	}
+
+	public void deselectAlly() {
+		if (selectedAlly != null) {
+			foreach (GameObject obj in selectedAlly.waypoints) {
+				obj.SetActive (false);
+			}
+			selectedAlly = null;
+			if (selectRing != null) {
+				Destroy (selectRing);
+			}
+			selectRing = null;
+		}
+	}
+
+	public void toggleBuild(bool objectBuilt) {
+		if (objectBuilt) {
+			recreateGrid();
+		}
+		this.build = !this.build;
+		this.buildDestroy = false;
+		cam.SetCustomCursor ();
+	}
+
+	public void toggleBuildDestroy() {
+		this.buildDestroy = !this.buildDestroy;
+		this.build = false;
+		cam.SetCustomCursor ();
+	}
+
+	public void toggleWaypoints() {
+		this.setWaypoints = !setWaypoints;
+		cam.SetCustomCursor ();
+	}
+
+	public void deleteLastWaypoint() {
+		if (selectedAlly != null) {
+			selectedAlly.removeLastWaypoint ();
+		}
+	}
+
+	public void recreateGrid() {
+		recheckPaths = true;
+		pf.grid.CreateGrid ();
 	}
 }

@@ -5,11 +5,13 @@ using UnityEngine;
 public class AllyController : PersonController {
 
 	public PlayerController leader;
-	public string mode = "Standstill";
-	private string prevMode = "Standstill";
+	public string mode = "Command";
+	private string prevMode = "Command";
 	public string aggression = "Defensive";
 
 	public List<Vector3> movePoints;
+	public List<GameObject> waypoints;
+	public Vector3 targetPos;
 	public Vector3 lookPoint;
 	public Vector3 actionPoint;
 	public bool cyclic = true;
@@ -18,25 +20,24 @@ public class AllyController : PersonController {
 	public float easeAmount;
 	float nextMoveTime;
 	float percentBetweenPoints;
-	int fromPoint;
-	int toPoint;
+	int fromPoint = 0;
+	int toPoint = 0;
 
 	bool onPath = false;
 	public float actionDelay = 0.5f;
 	float actionTimer = 0.0f;
-	bool performingAction = false;
 	public Vector3 previousPosition;
 	bool positionFix = false;
 	public float flightDistance = 1.0f;
 
 	[HideInInspector]
-	public List<string> modes = new List<string> {"Standstill", "Points", "Wander"};
+	public List<string> modes = new List<string> {"Command", "Points", "Wander"};
 	public List<string> aggressions = new List<string> {"Passive", "Defensive", "Offensive"};
 
 	// Use this for initialization
 	new void Start () {
 		base.Start ();
-		previousPosition = movePoints [0];
+		targetPos = transform.position;
 		if (mode == "Points") {
 			positionFix = true;
 			onPath = false;
@@ -47,9 +48,12 @@ public class AllyController : PersonController {
 	public void GMUpdate () {
 		if (prevMode != mode) {
 			prevMode = mode;
+			StopCoroutine ("FollowPath");
 			if (mode == "Points") {
 				positionFix = true;
 				onPath = false;
+				targetPos = movePoints [toPoint];
+				PathRequestManager.RequestPath (this, transform.position, targetPos, OnPathFound);
 			}
 		}
 		getActions ();
@@ -66,37 +70,65 @@ public class AllyController : PersonController {
 	}
 
 	void getMovement() {
+		pathFindTimer += (pathFindTimer >= pathRefreshTime ? 0.0f : Time.deltaTime);
 		switch (mode) {
-		case "Standstill":
-			break;
-		case "Points":
-			if (!performingAction) {
-				Vector3 direction = Vector3.zero;
-				if (positionFix) {
-					float dirX = previousPosition.x - transform.position.x;
-					float dirY = previousPosition.y - transform.position.y;
-					if (Mathf.Abs (dirX) < .001 && Mathf.Abs (dirY) < .001) {
-						positionFix = false;
-					}
-					Vector3 dir = new Vector3(dirX, dirY, 0);
-					direction = Vector3.ClampMagnitude(dir * 1000, moveSpeed) * Time.deltaTime;
-				} else {
-					direction = CalculatePointMovement ();
-					if (onPath) {
-						previousPosition = transform.position;
-					}
-				}
-				transform.position += direction;
-				if (direction != Vector3.zero) {
-					lookPoint = direction;
+		case "Command":
+			if (targetPos != transform.position) {
+				if (pathFindTimer >= pathRefreshTime) {
+					pathFindTimer = 0.0f;
+					PathRequestManager.RequestPath (this, transform.position, targetPos, OnPathFound);
 				}
 			}
+			break;
+		case "Points":
+			if (movePoints.Count > 0) {
+				//Check distance to next point
+				if (euclideanDistance (transform.position, targetPos) < .2) {
+					fromPoint++;
+					fromPoint %= movePoints.Count;
+					toPoint = (fromPoint + 1) % movePoints.Count;
+					targetPos = movePoints [toPoint];
+					PathRequestManager.RequestPath (this, transform.position, targetPos, OnPathFound);
+				} else if (gm.recheckPaths) {
+					PathRequestManager.RequestPath (this, transform.position, targetPos, OnPathFound);
+				} else if (pathFindTimer >= pathRefreshTime) {
+					pathFindTimer = 0.0f;
+					//PathRequestManager.RequestPath (this, transform.position, targetPos, OnPathFound);
+				}
+			} else {
+				targetPos = transform.position;
+				StopCoroutine ("FollowPath");
+			}
+
+			/**
+			Vector3 direction = Vector3.zero;
+			if (positionFix) {
+				float dirX = previousPosition.x - transform.position.x;
+				float dirY = previousPosition.y - transform.position.y;
+				if (Mathf.Abs (dirX) < .001 && Mathf.Abs (dirY) < .001) {
+					positionFix = false;
+				}
+				Vector3 dir = new Vector3(dirX, dirY, 0);
+				direction = Vector3.ClampMagnitude(dir * 1000, moveSpeed) * Time.deltaTime;
+			} else {
+				direction = CalculatePointMovement ();
+				if (onPath) {
+					previousPosition = transform.position;
+				}
+			}
+			transform.position += direction;
+			if (direction != Vector3.zero) {
+				lookPoint = direction;
+			}
+			*/
 			break;
 		case "Wander":
 			break;
 		}
 	}
 
+	/**
+	 * No longer necessary
 	Vector3 CalculatePointMovement() {
 		if (Time.time < nextMoveTime) {
 			return Vector3.zero;
@@ -126,15 +158,16 @@ public class AllyController : PersonController {
 
 		return newPos - transform.position;
 	}
+	*/
 
 	void getRotation() {
 		switch (mode) {
-		case "Standstill":
+		case "Command":
 			transform.rotation = Quaternion.LookRotation (Vector3.forward, lookPoint);
 			transform.Rotate (new Vector3 (0, 0, rotationFix));
 			break;
 		case "Points":
-			transform.rotation = Quaternion.LookRotation (Vector3.forward, lookPoint);
+			transform.rotation = Quaternion.LookRotation (Vector3.forward, targetPos);
 			transform.Rotate (new Vector3 (0, 0, rotationFix));
 			break;
 		case "Wander":
@@ -189,6 +222,39 @@ public class AllyController : PersonController {
 				actionTimer = 0.0f;
 			}
 		}
+	}
+
+	public void commandMove(Vector3 pos) {
+		mode = "Command";
+		targetPos = new Vector3(pos.x, pos.y, 0);
+		PathRequestManager.RequestPath (this, transform.position, targetPos, OnPathFound);
+	}
+
+	public void addWaypoint(Vector3 pos) {
+		Debug.Log ("Add Waypoint!");
+		Vector3 newPoint = new Vector3 (pos.x, pos.y, 0);
+		string load = "Other/Waypoint";
+		GameObject newWaypoint = (GameObject) Instantiate(Resources.Load (load, typeof(GameObject)) as GameObject);
+		newWaypoint.transform.position = newPoint;
+		waypoints.Add (newWaypoint);
+		movePoints.Add (newPoint);
+	}
+
+	public void removeWaypointByClick(Vector3 pos) {
+		GameObject obj = gm.getClickedObject ();
+		if (obj.tag == "Waypoint") {
+			movePoints.RemoveAt(waypoints.IndexOf (obj));
+			waypoints.Remove (obj);
+			Destroy (obj);
+		}
+	}
+
+	public void removeLastWaypoint() {
+		int lastIndex = waypoints.Count - 1;
+		movePoints.RemoveAt(lastIndex);
+		GameObject obj = waypoints [lastIndex];
+		waypoints.RemoveAt(lastIndex);
+		Destroy (obj);
 	}
 
 	float ease(float x) {

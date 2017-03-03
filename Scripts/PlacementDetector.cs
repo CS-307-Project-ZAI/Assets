@@ -4,9 +4,11 @@ using UnityEngine;
 
 public class PlacementDetector : MonoBehaviour {
 
+	bool check = false;
 	SpriteRenderer spr;
 	public Sprite green;
 	public Sprite red;
+	public LayerMask checkLayer;
 
 	public List<GameObject> collisions = new List<GameObject>();
 
@@ -14,17 +16,21 @@ public class PlacementDetector : MonoBehaviour {
 		spr = gameObject.GetComponent<SpriteRenderer> ();
 	}
 
-	void OnCollisionEnter2D(Collision2D col) {
-		Debug.Log ("Collided!");
-		collisions.Add (col.gameObject);
-		spr.sprite = red;
+	void OnTriggerEnter2D(Collider2D col) {
+		if (col.gameObject.tag == "Wall" || col.gameObject.tag == "Block") {
+			Debug.Log ("Enter");
+			Debug.Log ("Count: " + collisions.Count);
+			if (!collisions.Contains (col.gameObject)) {
+				collisions.Add (col.gameObject);
+			}
+		}
 	}
 
-	void OnCollisionExit2D(Collision2D col) {
-		Debug.Log ("Remove!");
-		collisions.Remove (col.gameObject);
-		if (collisions.Count <= 0) {
-			spr.sprite = green;
+	void OnTriggerExit2D(Collider2D col) {
+		if (col.gameObject.tag == "Wall" || col.gameObject.tag == "Block") {
+			Debug.Log ("Exit");
+			Debug.Log ("Count: " + collisions.Count);
+			collisions.Remove (col.gameObject);
 		}
 	}
 

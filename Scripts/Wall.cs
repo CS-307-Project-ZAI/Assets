@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Wall : MonoBehaviour {
 
+	public GameManager gm;
 	public Wall wall;
 	public string wallTier;
 	public int wallHealth;
@@ -26,6 +27,7 @@ public class Wall : MonoBehaviour {
 		if (wallHealth <= 0) {
 			//Destroy Wall GameObject
 			Destroy (this.gameObject);
+			gm.recreateGrid ();
 		}
 	}
 
