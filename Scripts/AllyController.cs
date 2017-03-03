@@ -127,39 +127,6 @@ public class AllyController : PersonController {
 		}
 	}
 
-	/**
-	 * No longer necessary
-	Vector3 CalculatePointMovement() {
-		if (Time.time < nextMoveTime) {
-			return Vector3.zero;
-		}
-		onPath = true;
-		fromPoint %= movePoints.Count;
-		toPoint = (fromPoint + 1) % movePoints.Count;
-		float distanceBetweenPoints = Vector3.Distance (movePoints[fromPoint], movePoints[toPoint]);
-		percentBetweenPoints += Time.deltaTime * moveSpeed/distanceBetweenPoints;
-		percentBetweenPoints = Mathf.Clamp01 (percentBetweenPoints);
-		float easedPercentBetweenWaypoints = ease (percentBetweenPoints);
-
-		Vector3 newPos = Vector3.Lerp (movePoints [fromPoint], movePoints [toPoint], easedPercentBetweenWaypoints);
-
-		if (percentBetweenPoints >= 1) {
-			percentBetweenPoints = 0;
-			fromPoint ++;
-
-			if (!cyclic) {
-				if (fromPoint >= movePoints.Count - 1) {
-					fromPoint = 0;
-					movePoints.Reverse ();
-				}
-			}
-			nextMoveTime = Time.time + waitTime;
-		}
-
-		return newPos - transform.position;
-	}
-	*/
-
 	void getRotation() {
 		switch (mode) {
 		case "Command":
@@ -255,10 +222,5 @@ public class AllyController : PersonController {
 		GameObject obj = waypoints [lastIndex];
 		waypoints.RemoveAt(lastIndex);
 		Destroy (obj);
-	}
-
-	float ease(float x) {
-		float a = easeAmount + 1;
-		return Mathf.Pow(x,a) / (Mathf.Pow(x,a) + Mathf.Pow(1-x,a));
 	}
 }
