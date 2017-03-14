@@ -18,6 +18,8 @@ public class GameManager : MonoBehaviour {
 	public string difficulty = "Easy";
 	public PathFinding pf;
 	public TriggersAttributes triggerAttribute;
+	public Attributes Attribute;
+	public AttributesZ AttributeZ;
 
 	[HideInInspector]
 	public List<PersonController> personKill;
