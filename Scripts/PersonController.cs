@@ -23,6 +23,7 @@ public class PersonController : MonoBehaviour {
 	public float pathFindTimer = 0.0f;
 	public float pathRefreshTime = 0.0001f;
 	public bool followingPath = false;
+	public bool getNextPoint = false;
 
 	public int currentWeapon = 0;
 	protected float attackTimer = 0.0f;
@@ -69,29 +70,21 @@ public class PersonController : MonoBehaviour {
 		}
 	}
 
-	public void OnPathFound(Vector3[] newPath, bool pathSuccessful) {
-		if (pathSuccessful) {
-			path = newPath;
-			targetIndex = 0;
-			StopCoroutine("FollowPath");
-			StartCoroutine("FollowPath");
-		}
-	}
-
 	IEnumerator FollowPath() {
 		if (path.Length > 0) {
 			followingPath = true;
 			targetIndex = 0;
 			Vector3 currentWaypoint = path [0];
 			while (true) {
-				//if (performingAction) {
-				//	yield return null;
-				//}
+				if (performingAction) {
+					yield return null;
+				}
 				if ((Vector3)transform.position == currentWaypoint) {
 					targetIndex++;
 					if (targetIndex >= path.Length) {
 						targetIndex = 0;
 						path = null;
+						getNextPoint = true;
 						yield break;
 					}
 					currentWaypoint = path [targetIndex];
@@ -100,6 +93,15 @@ public class PersonController : MonoBehaviour {
 				transform.position = Vector3.MoveTowards (transform.position, currentWaypoint, moveSpeed * Time.deltaTime);
 				yield return null;
 			}
+		}
+	}
+
+	public void OnPathFound(Vector3[] newPath, bool pathSuccessful) {
+		if (pathSuccessful) {
+			path = newPath;
+			targetIndex = 0;
+			StopCoroutine("FollowPath");
+			StartCoroutine("FollowPath");
 		}
 	}
 
