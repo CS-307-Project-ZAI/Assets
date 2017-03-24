@@ -8,11 +8,15 @@ public class EnemyController : PersonController {
     public float attackRate = 1.0f;
 	public int damage = 2;
 
+	public AttributesZ stats;
+
 	// Use this for initialization
 	new void Start () {
 		attackTimer = 0.0f;
 		//gm = FindObjectOfType<GameManager> ();
 		//PathRequestManager.RequestPath(this, transform.position, target.transform.position, OnPathFound);
+		stats = (AttributesZ)Instantiate(gm.AttributeZ);
+		stats.setOwner(this);
 	}
 	
 	// Update is called once per frame
