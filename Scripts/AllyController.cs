@@ -87,7 +87,8 @@ public class AllyController : PersonController {
 		case "Points":
 			if (movePoints.Count > 0) {
 				//Check distance to next point
-				if (euclideanDistance (transform.position, targetPos) < .2) {
+				if (getNextPoint) {
+					getNextPoint = false;
 					fromPoint++;
 					fromPoint %= movePoints.Count;
 					toPoint = (fromPoint + 1) % movePoints.Count;

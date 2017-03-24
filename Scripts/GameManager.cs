@@ -53,6 +53,7 @@ public class GameManager : MonoBehaviour {
         spawner = new EnemySpawner(this);
 		spawnPlayer ();
 		spawnAlly ();
+		cam.target = player;
 	}
 
 	// Update is called once per frame
