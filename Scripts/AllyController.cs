@@ -56,6 +56,7 @@ public class AllyController : PersonController {
 			if (mode == "Points") {
 				positionFix = true;
 				onPath = false;
+				Debug.Log (toPoint);
 				targetPos = movePoints [toPoint];
 				PathRequestManager.RequestPath (this, transform.position, targetPos, OnPathFound);
 			}
