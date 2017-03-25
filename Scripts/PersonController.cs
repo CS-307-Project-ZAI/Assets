@@ -124,4 +124,15 @@ public class PersonController : MonoBehaviour {
 	public float euclideanDistance(Vector3 pos, Vector3 target) {
 		return Mathf.Sqrt (Mathf.Pow(target.x - pos.x, 2) + Mathf.Pow(target.y - pos.y, 2));
 	}
+
+	public int getBuildRate() {
+		if (transform.gameObject.tag == "Ally") {
+			AllyController ac = transform.GetComponent<AllyController> ();
+			return ac.stats.buildRate;
+		} else if (transform.gameObject.tag == "Player") {
+			PlayerController pc = transform.GetComponent<PlayerController> ();
+			return pc.buildRate;
+		}
+		return 0;
+	}
 }

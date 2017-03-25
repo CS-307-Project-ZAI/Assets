@@ -7,7 +7,7 @@ public class PlayerController : PersonController {
 
 	public List<AllyController> allies;
 	public bool wallRotation = false;
-
+	public int buildRate = 1;
 
 	new void Start() {
 		base.Start ();

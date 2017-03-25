@@ -22,6 +22,8 @@ public class Attributes : MonoBehaviour
 	public int speed = 5;
 	[Range(0, 10)]
 	public int strength = 5;
+	[Range(0, 10)]
+	public int buildRate = 1;
 	public float attackRate = 1.0f;
 
 	public List<PersonController> proximityNPCs;

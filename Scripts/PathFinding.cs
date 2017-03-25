@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using UnityEngine;
 using System;
+using System.IO;
 
 public class PathFinding : MonoBehaviour {
     PathRequestManager requestManager;
@@ -12,7 +13,6 @@ public class PathFinding : MonoBehaviour {
         requestManager = GetComponent<PathRequestManager>();
         grid = GetComponent<Grid>();
     }
-
    
     public void StartFindPath(Vector3 startPos, Vector3 targetPos) {
         StartCoroutine(FindPath(startPos, targetPos));
@@ -24,51 +24,64 @@ public class PathFinding : MonoBehaviour {
         bool pathSuccess = false;
         Node startNode = grid.NodeFromWorldPoint(startPos);
         Node targetNode = grid.NodeFromWorldPoint(targetPos);
+		bool shortcut = false;
        	//UnityEngine.Debug.Log("startnode walkable =" + startNode.walkable + " endNode walkable = " + targetNode.walkable);
         if (startNode.walkable && targetNode.walkable) {
-            Heap<Node> openSet = new Heap<Node>(grid.MaxSize);
-            HashSet<Node> closedSet = new HashSet<Node>();
-            openSet.Add(startNode);
+			//Raycast to quick-check path
+			float dist = getEuclideanDistance(startPos, targetPos);
+			Vector3 vect = new Vector3 (targetPos.x - startPos.x, targetPos.y - startPos.y, 0);
+			//UnityEngine.Debug.DrawRay(startPos, vect, Color.red, 1);
+			if (!Physics2D.Raycast (startPos, vect, dist, grid.unwalkableMask)) {
+				waypoints = new Vector3[1];
+				waypoints [0] = targetPos;
+				pathSuccess = true;
+				shortcut = true;
+			} else {
+				UnityEngine.Debug.Log ("No straightline...performing A-star");
+				Heap<Node> openSet = new Heap<Node> (grid.MaxSize);
+				HashSet<Node> closedSet = new HashSet<Node> ();
+				openSet.Add (startNode);
 
-            while (openSet.Count > 0) {
-                Node currentNode = openSet.RemoveFirst();
-                closedSet.Add(currentNode);
+				while (openSet.Count > 0) {
+					Node currentNode = openSet.RemoveFirst ();
+					closedSet.Add (currentNode);
 
-                if (currentNode == targetNode) {
-                    pathSuccess = true;
-                    break;
-                }
-
-				foreach (Node neighbour in grid.GetNeighbours(currentNode)) {
-					if (!neighbour.walkable || closedSet.Contains (neighbour)) {
-						continue;
+					if (currentNode == targetNode) {
+						pathSuccess = true;
+						break;
 					}
 
-					int newMovementCostToNeighbour = currentNode.gCost + getDistance (currentNode, neighbour);
-					if (newMovementCostToNeighbour < neighbour.gCost || !openSet.Contains (neighbour)) {
-						neighbour.gCost = newMovementCostToNeighbour;
-						neighbour.hCost = getDistance (neighbour, targetNode);
+					foreach (Node neighbour in grid.GetNeighbours(currentNode)) {
+						if (!neighbour.walkable || closedSet.Contains (neighbour)) {
+							continue;
+						}
 
-						neighbour.parent = currentNode;
+						int newMovementCostToNeighbour = currentNode.gCost + getDistance (currentNode, neighbour);
+						if (newMovementCostToNeighbour < neighbour.gCost || !openSet.Contains (neighbour)) {
+							neighbour.gCost = newMovementCostToNeighbour;
+							neighbour.hCost = getDistance (neighbour, targetNode);
 
-						if (!openSet.Contains (neighbour)) {
-							openSet.Add (neighbour);
-						} 
-						/*
+							neighbour.parent = currentNode;
+
+							if (!openSet.Contains (neighbour)) {
+								openSet.Add (neighbour);
+							} 
+							/*
 						else {
 							openSet.UpdateItem (neighbour);
 						}
 						*/
+						}
 					}
 				}
-            }
+			}
         }
         yield return null;
-        if (pathSuccess)
-        {
+
+        if (!shortcut && pathSuccess) {
             waypoints = RetracePath(startNode, targetNode);
         }
-        requestManager.FinishedProcessingPath(waypoints,pathSuccess);
+        requestManager.FinishedProcessingPath(waypoints, pathSuccess);
 
     }
 
@@ -110,4 +123,8 @@ public class PathFinding : MonoBehaviour {
         }
         return 14 * distX + 10 * (distY - distX);
     }
+
+	public float getEuclideanDistance(Vector3 pos1, Vector3 pos2) {
+		return Mathf.Sqrt (Mathf.Pow (pos2.x - pos1.x, 2) + Mathf.Pow (pos2.y - pos1.y, 2));
+	}
 }

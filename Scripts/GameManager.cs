@@ -88,7 +88,6 @@ public class GameManager : MonoBehaviour {
 		//Get Game Actions
 		getManagerActions ();
 
-
 		//Update UI
 		ui.GMUpdate();
 
@@ -214,7 +213,6 @@ public class GameManager : MonoBehaviour {
         e.gm = this;
 		enemies.Add (e);
 	}
-
     
     public void spawnEnemy() {
         spawnEnemyAtLocation(Vector3.zero);
