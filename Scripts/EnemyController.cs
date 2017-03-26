@@ -4,29 +4,27 @@ using UnityEngine;
 
 public class EnemyController : PersonController {
 
-	public PlayerController target;
-	public float spawnRate = 5.0f;
-	public float attackRate = 1.0f;
-	public int spawnAmount = 1;
+	public PersonController target;
+    public float attackRate = 1.0f;
 	public int damage = 2;
-	public EnemyController spawn;
 
-	float spawnTimer = 0.0f;
+	public AttributesZ stats;
 
 	// Use this for initialization
 	new void Start () {
-		spawnTimer = 0.0f;
 		attackTimer = 0.0f;
-		gm = FindObjectOfType<GameManager> ();
+		//gm = FindObjectOfType<GameManager> ();
 		//PathRequestManager.RequestPath(this, transform.position, target.transform.position, OnPathFound);
+		stats = (AttributesZ)Instantiate(gm.AttributeZ);
+		stats.setOwner(this);
+		pathFindTimer = pathRefreshTime;
 	}
 	
 	// Update is called once per frame
 	public void GMUpdate () {
-		attackTimer += Time.deltaTime;
+        attackTimer += Time.deltaTime;
 		getMovement ();
 		getRotation ();
-		checkSpawnTime ();
 		if (targetTag != null) {
 			targetTag.transform.rotation = Quaternion.identity;
 			targetTag.transform.position = new Vector3 (transform.position.x, transform.position.y + 0.5f, 0);
@@ -63,23 +61,7 @@ public class EnemyController : PersonController {
 		transform.Rotate (new Vector3 (0, 0, this.rotationFix));
 	}
 
-	void checkSpawnTime() {
-		spawnTimer += Time.deltaTime;
-		if (spawnTimer > spawnRate) {
-			for (int i = 0; i < spawnAmount; i++) {
-				spawnChild ();
-			}
-			spawnTimer = 0.0f;
-		}
-	}
-
-	void spawnChild() {
-		EnemyController e = (EnemyController) Instantiate (spawn);
-		e.target = target;
-		e.transform.position = transform.position + new Vector3(1, 0, 0);
-		e.spawn = spawn;
-		gm.enemies.Add (e);
-	}
+	
 
 	void OnTriggerStay2D(Collider2D col) {
 		if (col.gameObject.tag == "Player") {

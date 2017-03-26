@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour {
-
 	public PlayerController player;
 	public AllyController ally;
 	public List<AllyController> people;
@@ -19,6 +18,8 @@ public class GameManager : MonoBehaviour {
 	public string difficulty = "Easy";
 	public PathFinding pf;
 	public TriggersAttributes triggerAttribute;
+	public Attributes Attribute;
+	public AttributesZ AttributeZ;
 
 	[HideInInspector]
 	public List<PersonController> personKill;
@@ -33,18 +34,26 @@ public class GameManager : MonoBehaviour {
 	public bool recheckPaths = false;
 	public bool setWaypoints = false;
 
-	string winDir = System.Environment.GetEnvironmentVariable("winDir");
+    public int currentTimeOfDay = 0;
+    public enum DayNightCycle {DAY, NIGHT};
+    public DayNightCycle currentCycle = DayNightCycle.DAY;
+    public int dayLength = 60;
+
+    string winDir = System.Environment.GetEnvironmentVariable("winDir");
 
 	private int modeIndex = 0;
 	private string[] modes = {"Combat", "Command", "Build"};
+    private EnemySpawner spawner;
 
 	// Use this for initialization
 	void Start () {
 		ui = FindObjectOfType<UIController> ();
 		cam = FindObjectOfType<CameraController> ();
 		ui.GMStart ();
+        spawner = new EnemySpawner(this);
 		spawnPlayer ();
 		spawnAlly ();
+		cam.target = player;
 	}
 
 	// Update is called once per frame
@@ -74,9 +83,10 @@ public class GameManager : MonoBehaviour {
 			ui.GMUpdate ();
 			return;
 		}
+        updateDayNightCycle();
+
 		//Get Game Actions
 		getManagerActions ();
-
 
 		//Update UI
 		ui.GMUpdate();
@@ -148,7 +158,9 @@ public class GameManager : MonoBehaviour {
 			Destroy (b.gameObject);
 		}
 		bulletKill.Clear ();
-	}
+
+        spawner.checkSpawnTime();
+    }
 
 	void getManagerActions() {
 		if (Input.GetKeyDown (KeyCode.J)) {
@@ -193,14 +205,18 @@ public class GameManager : MonoBehaviour {
 		a.personName = "Billy";
 		a.transform.position = new Vector3 (2, 0, 0);
 	}
-
-	void spawnEnemy() {
+    
+	public void spawnEnemyAtLocation(Vector3 spawnLocation) {
 		EnemyController e = (EnemyController) Instantiate (enemy);
 		e.target = player;
-		e.transform.position = new Vector3 (0, 0, 0);
-		e.spawn = enemy;
+		e.transform.position = spawnLocation;
+        e.gm = this;
 		enemies.Add (e);
 	}
+    
+    public void spawnEnemy() {
+        spawnEnemyAtLocation(Vector3.zero);
+    }
 
 	public void targetEnemy(EnemyController e) {
 		if (targetedEnemies.IndexOf (e) >= 0) {
@@ -299,4 +315,17 @@ public class GameManager : MonoBehaviour {
 		Debug.Log("File saved to /ProjectZAI/savefile.txt");
 		writer.Close ();
 	}
+
+    private void updateDayNightCycle() {
+        currentTimeOfDay = (int)Time.realtimeSinceStartup % dayLength;
+        if (currentTimeOfDay < dayLength / 2)
+        {
+            currentCycle = DayNightCycle.DAY;
+        }
+        else {
+            currentCycle = DayNightCycle.NIGHT;
+        }
+
+    }
+
 }

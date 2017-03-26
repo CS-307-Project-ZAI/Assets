@@ -30,6 +30,8 @@ public class AllyController : PersonController {
 	bool positionFix = false;
 	public float flightDistance = 1.0f;
 
+	public Attributes stats;
+
 	[HideInInspector]
 	public List<string> modes = new List<string> {"Command", "Points", "Wander"};
 	public List<string> aggressions = new List<string> {"Passive", "Defensive", "Offensive"};
@@ -42,6 +44,8 @@ public class AllyController : PersonController {
 			positionFix = true;
 			onPath = false;
 		}
+		stats = (Attributes)Instantiate(gm.Attribute);
+		stats.setOwner(this);
 	}
 	
 	// Update is called once per frame
@@ -52,6 +56,7 @@ public class AllyController : PersonController {
 			if (mode == "Points") {
 				positionFix = true;
 				onPath = false;
+				Debug.Log (toPoint);
 				targetPos = movePoints [toPoint];
 				PathRequestManager.RequestPath (this, transform.position, targetPos, OnPathFound);
 			}
@@ -83,7 +88,8 @@ public class AllyController : PersonController {
 		case "Points":
 			if (movePoints.Count > 0) {
 				//Check distance to next point
-				if (euclideanDistance (transform.position, targetPos) < .2) {
+				if (getNextPoint) {
+					getNextPoint = false;
 					fromPoint++;
 					fromPoint %= movePoints.Count;
 					toPoint = (fromPoint + 1) % movePoints.Count;
