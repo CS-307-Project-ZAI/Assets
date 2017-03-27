@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class AllyController : PersonController {
 
-	public PlayerController leader;
+	public PlayerController leader = null;
 	public string mode = "Command";
 	private string prevMode = "Command";
 	public string aggression = "Defensive";
@@ -36,8 +36,10 @@ public class AllyController : PersonController {
 	public List<string> modes = new List<string> {"Command", "Points", "Wander"};
 	public List<string> aggressions = new List<string> {"Passive", "Defensive", "Offensive"};
 
-	// Use this for initialization
-	new void Start () {
+    public Quest questToGive = null;
+
+    // Use this for initialization
+    new void Start () {
 		base.Start ();
 		targetPos = transform.position;
 		if (mode == "Points") {
@@ -46,10 +48,32 @@ public class AllyController : PersonController {
 		}
 		stats = (Attributes)Instantiate(gm.Attribute);
 		stats.setOwner(this);
-	}
-	
-	// Update is called once per frame
-	public void GMUpdate () {
+        initRandomQuest();
+    }
+
+    public void becomeFollower(PlayerController p)
+    {
+        leader = p;
+        questToGive = null;
+    }
+
+    public void assignQuest(QuestLog questLog)
+    {
+        if (questToGive == null) initRandomQuest();
+        questLog.addQuest(questToGive);
+    }
+
+    private void initRandomQuest()
+    {
+        if (questToGive == null && leader == null)
+        {
+            int questID = Random.Range(0, 1000);
+            questToGive = new Quest(this, questID, QuestObjective.KILL, 1, (int)Random.Range(3, 10));
+        }
+    }
+
+    // Update is called once per frame
+    public void GMUpdate () {
 		if (prevMode != mode) {
 			prevMode = mode;
 			StopCoroutine ("FollowPath");

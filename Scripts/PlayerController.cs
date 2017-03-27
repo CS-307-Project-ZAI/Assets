@@ -8,8 +8,8 @@ public class PlayerController : PersonController {
 	public List<AllyController> allies;
 	public bool wallRotation = false;
 	public int buildRate = 1;
-
-	new void Start() {
+    public QuestLog questLog;
+    new void Start() {
 		base.Start ();
 
 	}
@@ -24,7 +24,10 @@ public class PlayerController : PersonController {
 		if (weapons.Count > 0) {
 			getActions ();
 		}
-	}
+
+        questLog = GetComponent<QuestLog>();
+        questLog.questLogOwner = this;
+    }
 
 	void getMovement() {
 		float moveX = Input.GetAxisRaw ("Horizontal");
@@ -160,9 +163,57 @@ public class PlayerController : PersonController {
 				}
 			}
 		}
-	}
 
-	void addAlly(AllyController ally) {
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            AllyController a = getMeleeAlly();
+            if (a != null)
+            {
+                handleQuestInput(a);
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            printQuestLog();
+        }
+    }
+
+    public void printQuestLog()
+    {
+        foreach (Quest q in questLog.quests)
+        {
+            Debug.Log(q.getLogString());
+        }
+    }
+
+    public AllyController getMeleeAlly()
+    {
+        foreach (AllyController a in gm.people)
+        {
+            if (Vector3.Magnitude(a.transform.position - transform.position) <= 3f)
+            {
+                if (a.questToGive != null && a.leader == null)
+                {
+                    return a;
+                }
+            }
+        }
+        return null;
+    }
+
+    private void handleQuestInput(AllyController a)
+    {
+        if (questLog.quests.Contains(a.questToGive))
+        {
+            questLog.turninQuest(a, a.questToGive.getQuestID());
+        }
+        else
+        {
+            a.assignQuest(questLog);
+        }
+    }
+
+    public void addAlly(AllyController ally) {
 		allies.Add (ally);
 		ally.leader = this;
 		ally.mode = "Standstill";
