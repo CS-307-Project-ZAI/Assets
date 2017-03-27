@@ -130,7 +130,8 @@ public class GameManager : MonoBehaviour {
 		foreach (PersonController p in personKill) {
 			PathRequestManager.RemoveRequest (p);
 			if (p.gameObject.tag == "Enemy") {
-				enemies.Remove ((EnemyController) p);
+                player.questLog.addKill(1);
+                enemies.Remove ((EnemyController) p);
 				if (targetedEnemies.IndexOf ((EnemyController) p) >= 0) {
 					targetedEnemies.Remove ((EnemyController) p);
 				}

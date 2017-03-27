@@ -50,7 +50,14 @@ public class UIController : MonoBehaviour {
 	Button hardButton;
 	Slider volumeSlider;
 
-	private string activeGUI = "";
+    //quest log
+    Text questLog1;
+    Text questLog2;
+    Text questLog3;
+    Text questLog4;
+    Text questLog5;
+
+    private string activeGUI = "";
 
 	public void GMStart() {
 		gm = FindObjectOfType<GameManager> ();
@@ -95,7 +102,14 @@ public class UIController : MonoBehaviour {
 		//Health bar
 		playerHealth = GameObject.Find ("Health Amount").GetComponent<Text> ();
 		healthBar = GameObject.Find ("Health Bar").GetComponent<RectTransform> ();
-	}
+
+        questLog1 = GameObject.Find("log1").GetComponent<Text>();
+        questLog2 = GameObject.Find("log2").GetComponent<Text>();
+        questLog3 = GameObject.Find("log3").GetComponent<Text>();
+        questLog4 = GameObject.Find("log4").GetComponent<Text>();
+        questLog5 = GameObject.Find("log5").GetComponent<Text>();
+
+    }
 
 	public void GMUpdate() {
 		if (gm.paused) {
@@ -224,9 +238,31 @@ public class UIController : MonoBehaviour {
 			healthWidth = 0.0f;
 		}
 		healthBar.sizeDelta = new Vector2 (healthWidth, 30);
-	}
 
-	private void DropdownChangeMode(Dropdown target) {
+        if (gm.player.questLog == null) {
+            Debug.Log("no quest log");
+            return;
+        }
+        updateQuestLogText(questLog1, gm.player.questLog.questAt(0));
+        updateQuestLogText(questLog2, gm.player.questLog.questAt(1));
+        updateQuestLogText(questLog3, gm.player.questLog.questAt(2));
+        updateQuestLogText(questLog4, gm.player.questLog.questAt(3));
+        updateQuestLogText(questLog5, gm.player.questLog.questAt(4));
+    }
+
+    private void updateQuestLogText(Text t, Quest q)
+    {
+        if (q != null)
+        {
+            t.text = gm.player.questLog.questLogString(q);
+        }
+        else
+        {
+            t.text = "empty quest slot";
+        }
+    }
+
+    private void DropdownChangeMode(Dropdown target) {
 		if (gm.selectedAlly != null) {
 			gm.selectedAlly.mode = target.options[target.value].text;
 		}
