@@ -16,7 +16,7 @@ public class AttributesZ : Attributes
 	//public List<EnemyController> herd;
 	public bool isHerding = false;
 	public bool AllyInRange;
-
+	public AllyController closestAlly = null;
 	// Use this for initialization
 	void Start()
 	{
@@ -49,8 +49,7 @@ public class AttributesZ : Attributes
 			if (proximityNPCs[i].gameObject.tag == "Player" || proximityNPCs[i].gameObject.tag == "Ally")
 				enemyInRange = true;
 		}
-
-
+		getInfluences(Time.deltaTime);
 	}
 
 	new public void setAttributes(string difficulty)
@@ -73,46 +72,65 @@ public class AttributesZ : Attributes
 		if (AllyInRange)
 		{
 			getClosestFoe();
-			//aggression behavior
+			mode = "Offensive";
+			getInfluencesAlly();
 		}
 		else
 		{
 			if (enemyInRange)
 			{
-				//Boid behavior function
+				mode = "Herding";
+				getInfluenceEnemies();
 			}
 			else
 			{
-				//idle behavior
+				mode = "Idle";
 			}
 		}
+	}
 
+	new public void getClosestFoe()
+	{
+		float shortestDistance = 1000000;
+		AllyController closest = null;
+		for (int i = 0; i < proximityAllies.Count; i++)
+		{
+			if (Vector3.Dot(this.transform.position - proximityAllies[i].transform.position, owner.transform.forward) > blindspot)
+			{
+				float distance = (this.transform.position - proximityAllies[i].transform.position).sqrMagnitude;
+				if (distance < shortestDistance)
+				{
+					shortestDistance = distance;
+					closest = (AllyController)proximityAllies[i];
+				}
+			}
+		}
+		closestAlly = closest;
+	}
 
-		//if (enemyInRange)
-		//{
-		//	if (inReact.withinRange.Count != 0)
-		//	{
-		//		Panicked = true;
-		//		PanickTimer = 5.0f;
-		//	}
+	public void getInfluencesAlly()
+	{
+		Vector3 avgDirection = averageDirectionWeighted(proximityAllies);
+		influenceOfNPCs = -avgDirection;
+	}
 
-		//	getClosestFoe();
+	public void getInfluenceEnemies()
+	{
+		Vector3 repulsion = -averageDirectionWeighted(inReact.withinRange) * 5.0f;
 
-		//	if (!Panicked)
-		//	{
-		//		//attack closest
-		//	}
-		//	else
-		//	{
-		//		//for all enemies in proximityNPCs add direction /sqrmagnitude to influence
-		//		PanickTimer -= DeltaT;
-		//		Vector3 avgDirection = averageDirectionWeighted(proximityEnemies);
-		//		influenceOfNPCs = -avgDirection;
-		//	}
-		//}
-		//else
-		//{
-		//	//whatever idle is
-		//}
+		Vector3 orientation = Vector3.zero;
+		foreach(EnemyController e in inHearing.withinRange)
+		{
+			orientation += e.transform.forward;
+		}
+		orientation.Normalize();
+		orientation = orientation * 2.5f;
+
+		Vector3 attraction = averageDirectionWeighted(inSight.withinRange) * 1.0f;
+
+		Vector3 sum = repulsion + orientation + attraction;
+		sum.Normalize();
+
+		influenceOfNPCs = sum; 
 	}
 }

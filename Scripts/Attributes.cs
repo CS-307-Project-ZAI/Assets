@@ -24,6 +24,17 @@ public class Attributes : MonoBehaviour
 	public int strength = 5;
 	public float attackRate = 1.0f;
 
+
+
+	public string mode = "Command";
+	public string prevMode = "Command";
+	public string aggression = "Defensive";
+
+	[HideInInspector]
+	public List<string> modes = new List<string> { "Command", "Points", "Wander" };
+	public List<string> aggressions = new List<string> { "Passive", "Defensive", "Offensive" };
+
+
 	public List<PersonController> proximityNPCs;
 	public List<PersonController> proximityAllies;
 	public List<PersonController> proximityEnemies;
