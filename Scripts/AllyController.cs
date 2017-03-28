@@ -59,7 +59,9 @@ public class AllyController : PersonController {
 
     public void assignQuest(QuestLog questLog)
     {
-        if (questToGive == null) initRandomQuest();
+		if (questToGive == null) {
+			initRandomQuest ();
+		}
         questLog.addQuest(questToGive);
     }
 

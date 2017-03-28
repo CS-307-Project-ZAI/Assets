@@ -38,15 +38,15 @@ public class QuestLog : MonoBehaviour {
         return q.getLogString();
     }
 
-    public void addQuest(Quest q) {
+	public bool addQuest(Quest q) {
         if (quests.Count < questLogSize)
         {
             quests.Add(q);
+			return true;
         }
-        else {
-            //error message quest log is full
-            Debug.Log("quest log is full");
-        }
+        //error message quest log is full
+        Debug.Log("quest log is full");
+		return false;
     }
 
     public Quest getQuest(int id) {
@@ -70,17 +70,17 @@ public class QuestLog : MonoBehaviour {
                     quests.Remove(q);
                 }
                 else {
-                    Debug.Log("quest not yet ready to turn in");
+                    Debug.Log("Quest not yet ready to turn in");
                 }
             }
             else {
                 //quest not turned in to correct person
-                Debug.Log("quest not turned in to correct person");
+                Debug.Log("Quest not turned in to correct person");
             }
         }
         else {
             //quest does not exist in log
-            Debug.Log("quest not found in questlog");
+            Debug.Log("Quest not found in questlog");
         }
     }
 }

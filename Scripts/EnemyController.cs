@@ -8,6 +8,8 @@ public class EnemyController : PersonController {
     public float attackRate = 1.0f;
 	public int damage = 2;
 
+	public AttackCollider ac;
+
 	public AttributesZ stats;
 
 	// Use this for initialization
@@ -18,6 +20,13 @@ public class EnemyController : PersonController {
 		stats = (AttributesZ)Instantiate(gm.AttributeZ);
 		stats.setOwner(this);
 		pathFindTimer = pathRefreshTime;
+
+		AttackCollider acLoad = Resources.Load ("Attributes/AttackCollider", typeof(AttackCollider)) as AttackCollider;
+		ac = (AttackCollider) Instantiate (acLoad);
+		ac.setRadius (transform.GetComponent<CircleCollider2D>().radius);
+		ac.owner = this;
+		ac.transform.parent = transform;
+		ac.transform.position = transform.position;
 	}
 	
 	// Update is called once per frame
@@ -59,26 +68,5 @@ public class EnemyController : PersonController {
 			transform.rotation = Quaternion.LookRotation (Vector3.forward, target.transform.position - transform.position);
 		}
 		transform.Rotate (new Vector3 (0, 0, this.rotationFix));
-	}
-
-	
-
-	void OnTriggerStay2D(Collider2D col) {
-		if (col.gameObject.tag == "Player") {
-			if (attackTimer >= attackRate) {
-				col.gameObject.SendMessage ("ApplyDamage", damage);
-				attackTimer = 0.0f;
-			}
-		} else if (col.gameObject.tag == "Ally") {
-			if (attackTimer >= attackRate) {
-				col.gameObject.SendMessage ("ApplyDamage", damage);
-				attackTimer = 0.0f;
-			}
-		} else if (col.gameObject.tag == "Wall") {
-			if (attackTimer >= attackRate) {
-				col.gameObject.SendMessage ("ApplyDamage", damage);
-				attackTimer = 0.0f;
-			}
-		}
 	}
 }

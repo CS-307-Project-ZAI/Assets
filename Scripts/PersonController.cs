@@ -24,10 +24,9 @@ public class PersonController : MonoBehaviour {
 	public float pathRefreshTime = 0.0001f;
 	public bool followingPath = false;
 	public bool getNextPoint = false;
-
 	public int currentWeapon = 0;
-	protected float attackTimer = 0.0f;
-	protected bool performingAction = false;
+	public float attackTimer = 0.0f;
+	public bool performingAction = false;
 
 	protected void Start() {
 		//Give person starting weapon

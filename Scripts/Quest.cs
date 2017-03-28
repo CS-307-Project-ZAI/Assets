@@ -84,7 +84,7 @@ public class Quest{
             questName = "Quest: Collect " + completionAmmount + " " + getNameofObjectiveID(objectiveID) + "s";
         }
         else {
-            questName = "Quest: other";
+            questName = "Quest: Other";
         }
     }
 
