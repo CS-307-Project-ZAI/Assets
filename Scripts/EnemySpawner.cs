@@ -14,6 +14,7 @@ public class EnemySpawner{
     public EnemySpawner(GameManager g) {
         gm = g;
     }
+
     public void checkSpawnTime()
     {
         float currentSpawnRate = spawnRate;
@@ -50,12 +51,15 @@ public class EnemySpawner{
 
     Vector3 getRandomSpawn()
     {
-        return gm.player.transform.position + new Vector3(Random.Range(maxDistanceToSpawnFromPlayer * -1, maxDistanceToSpawnFromPlayer), Random.Range(maxDistanceToSpawnFromPlayer * -1, maxDistanceToSpawnFromPlayer), 0);
+        return gm.player.transform.position + new Vector3(Random.Range(-maxDistanceToSpawnFromPlayer, maxDistanceToSpawnFromPlayer), Random.Range(-maxDistanceToSpawnFromPlayer, maxDistanceToSpawnFromPlayer), 0);
     }
+
     void spawnChild()
     {
-        Vector3 spawnPos = getRandomSpawn();
-        while (!isValidSpawn(spawnPos))spawnPos = getRandomSpawn();
+		Vector3 spawnPos;
+		do {
+			spawnPos = getRandomSpawn ();
+		} while (!isValidSpawn (spawnPos));
         gm.spawnEnemyAtLocation(spawnPos);
     }
 }

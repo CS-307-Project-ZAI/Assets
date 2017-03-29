@@ -10,8 +10,9 @@ public class Wall : MonoBehaviour {
 	public int wallHealth;
 	public bool isBuilding = false;
 	public int buildTime = 30;
+	public bool kill = false;
 
-	int buildProgress = 0;
+	public int buildProgress = 0;
 
 	float buildTickTime = 1.0f;
 	float buildTickTimer = 0.0f;
@@ -26,22 +27,18 @@ public class Wall : MonoBehaviour {
 	void ApplyDamage(int dmg){
 		isBuilding = false;
 		this.wallHealth -= dmg;
-		if (this.wallHealth < 0) {
-			this.wallHealth = 0;
-		}
 		wallHealthCheck ();
 	}
 
 	public virtual void wallHealthCheck(){
 		if (wallHealth <= 0) {
 			//Destroy Wall GameObject
-			Destroy (this.gameObject);
-			gm.recreateGrid ();
+			kill = true;
 		}
 	}
 
 	// Update is called once per frame
-	void Update () {
+	public void GMUpdate () {
 
 		//Update Building
 		if (isBuilding) {

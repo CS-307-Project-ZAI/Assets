@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour {
 	public List<EnemyController> targetedEnemies;
 	public List<Bullet> bullets;
 	public List<Wall> walls;
+	public List<SpawnPylon> pylons;
 	public int spawnAmount = 1;
 	public Weapon startingWeapon;
 	public string playerMode = "Combat";
@@ -23,6 +24,8 @@ public class GameManager : MonoBehaviour {
 
 	[HideInInspector]
 	public List<PersonController> personKill;
+	public List<Wall> wallKill;
+	public List<SpawnPylon> pylonKill;
 	public List<Bullet> bulletKill;
 	public bool paused = false;
 	public UIController ui;
@@ -114,6 +117,22 @@ public class GameManager : MonoBehaviour {
 			recheckPaths = false;
 		}
 
+		//Update Walls
+		foreach (Wall w in walls) {
+			w.GMUpdate ();
+			if (w.kill) {
+				wallKill.Add (w);
+			}
+		}
+
+		//Update Spawn Pylons
+		foreach (SpawnPylon p in pylons) {
+			p.GMUpdate ();
+			if (p.kill) {
+				pylonKill.Add (p);
+			}
+		}
+
 		//Updated selectedAlly
 		if (selectedAlly != null) {
 			if (selectRing == null) {
@@ -146,6 +165,20 @@ public class GameManager : MonoBehaviour {
 			Destroy (p.gameObject);
 		}
 		personKill.Clear ();
+
+		//Destroy walls in kill list and clear it
+		foreach (Wall w in wallKill) {
+			walls.Remove (w);
+			Destroy (w.gameObject);
+		}
+		wallKill.Clear ();
+
+		//Destroy pylons in kill list and clear it
+		foreach (SpawnPylon p in pylonKill) {
+			pylons.Remove (p);
+			Destroy (p.gameObject);
+		}
+		pylonKill.Clear ();
 
 		//Update Bullets
 		foreach (Bullet b in bullets) {
@@ -218,6 +251,10 @@ public class GameManager : MonoBehaviour {
     public void spawnEnemy() {
         spawnEnemyAtLocation(Vector3.zero);
     }
+
+	public void createSpawnPylon(Vector3 pos) {
+
+	}
 
 	public void targetEnemy(EnemyController e) {
 		if (targetedEnemies.IndexOf (e) >= 0) {
