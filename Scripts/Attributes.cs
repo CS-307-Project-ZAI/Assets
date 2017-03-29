@@ -15,7 +15,7 @@ public class Attributes : MonoBehaviour
 	[Range(0, 10)]
 	public int hearing = 5;
 	[Range(0, 10)]
-	public int reactZone = 5; //agression or panic trigger zone
+	public int reactZone = 8; //agression or panic trigger zone
 	[Range(-1, 1)]
 	public float blindspot = -0.1f; // -1 = 360 view, 1 = totally blind
 	[Range(0, 10)]
@@ -25,6 +25,17 @@ public class Attributes : MonoBehaviour
 	[Range(0, 10)]
 	public int buildRate = 1;
 	public float attackRate = 1.0f;
+
+
+
+	public string mode = "Command";
+	public string prevMode = "Command";
+	public string aggression = "Defensive";
+
+	[HideInInspector]
+	public List<string> modes = new List<string> { "Command", "Points", "Wander" };
+	public List<string> aggressions = new List<string> { "Passive", "Defensive", "Offensive" };
+
 
 	public List<PersonController> proximityNPCs;
 	public List<PersonController> proximityAllies;
@@ -40,6 +51,7 @@ public class Attributes : MonoBehaviour
 	public TriggersAttributes inHearing;
 	public TriggersAttributes inReact;
 	public Vector3 influenceOfNPCs = Vector3.zero;
+	public Vector3 movement = Vector3.zero;
 
 	// Use this for initialization
 	void Start()

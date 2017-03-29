@@ -6,17 +6,17 @@ public class AttributesZ : Attributes
 {
 	//attributes for herding behavior. The smarter the entity, the lower the attributes.
 	[Range(0, 10)]
-	public int boidsA = 5; //attraction radius
+	public float boidsA = 5f; //attraction radius
 	[Range(0, 10)]
-	public int boidsO = 5; //orientation radius
+	public float boidsO = 3f; //orientation radius
 	[Range(0, 10)]
-	public int boidsR = 5; //repulsion radius
+	public float boidsR = 0.5f; //repulsion radius
 
 	//public TriggerAttributesZ herding;
 	//public List<EnemyController> herd;
 	public bool isHerding = false;
 	public bool AllyInRange;
-
+	public PersonController closestAlly = null;
 	// Use this for initialization
 	void Start()
 	{
@@ -29,7 +29,7 @@ public class AttributesZ : Attributes
 		inReact.setParent(this);
 		inHearing.setParent(this);
 		inSight.setParent(this);
-
+		//inReact.setRadius(0.6f);
 		//herding = (TriggerAttributesZ)Instantiate(owner.gm.triggerAttributeZ);
 		//herding.transform.SetParent(this.transform);
 		//herding.setParent(this);
@@ -49,8 +49,7 @@ public class AttributesZ : Attributes
 			if (proximityNPCs[i].gameObject.tag == "Player" || proximityNPCs[i].gameObject.tag == "Ally")
 				enemyInRange = true;
 		}
-
-
+		getInfluences(Time.deltaTime);
 	}
 
 	new public void setAttributes(string difficulty)
@@ -63,6 +62,7 @@ public class AttributesZ : Attributes
 		inHearing.setRadius(hearing * 0.70f);
 		inReact.setParent(this);
 		inReact.setRadius((10f - reactZone) * 0.24f);
+		inReact.setRadius(0.6f);
 	}
 
 	new public void getInfluences(float DeltaT)
@@ -73,46 +73,124 @@ public class AttributesZ : Attributes
 		if (AllyInRange)
 		{
 			getClosestFoe();
-			//aggression behavior
+			mode = "Offensive";
+			getInfluencesAlly();
 		}
 		else
 		{
 			if (enemyInRange)
 			{
-				//Boid behavior function
+				mode = "Herding";
+				movement += influenceOfNPCs;
+				movement /= 2;
+				getInfluenceEnemies();
 			}
 			else
 			{
-				//idle behavior
+				mode = "Idle";
+				influenceOfNPCs = movement;
 			}
 		}
+	}
 
+	new public void getClosestFoe()
+	{
+		float shortestDistance = 1000000;
+		PersonController closest = null;
+		for (int i = 0; i < proximityAllies.Count; i++)
+		{
+			if (Vector3.Dot(this.transform.position - proximityAllies[i].transform.position, owner.transform.forward) > blindspot)
+			{
+				float distance = (this.transform.position - proximityAllies[i].transform.position).sqrMagnitude;
+				if (distance < shortestDistance)
+				{
+					shortestDistance = distance;
+					closest = proximityAllies[i];
+				}
+			}
+		}
+		closestAlly = closest;
+	}
 
-		//if (enemyInRange)
+	public void getInfluencesAlly()
+	{
+		Vector3 avgDirection = averageDirectionWeighted(proximityAllies);
+		influenceOfNPCs = -avgDirection;
+	}
+
+	public void getInfluenceEnemies()
+	{
+		Vector3 sum = Vector3.zero;
+		Vector3 repulsion = Vector3.zero;
+		Vector3 orientation = Vector3.zero;
+		Vector3 attraction = Vector3.zero;
+
+		float BR = boidsR * boidsR;
+		float BO = boidsO * boidsO;
+		float BA = boidsA * boidsA;
+		//foreach (PersonController e in proximityEnemies)
 		//{
-		//	if (inReact.withinRange.Count != 0)
-		//	{
-		//		Panicked = true;
-		//		PanickTimer = 5.0f;
-		//	}
-
-		//	getClosestFoe();
-
-		//	if (!Panicked)
-		//	{
-		//		//attack closest
-		//	}
+		//	Vector3 vect = e.transform.position - this.transform.position;
+		//	float d = vect.sqrMagnitude;
+		//	print(d);
+		//	if (d < BR)
+		//		repulsion -= vect / d;
 		//	else
 		//	{
-		//		//for all enemies in proximityNPCs add direction /sqrmagnitude to influence
-		//		PanickTimer -= DeltaT;
-		//		Vector3 avgDirection = averageDirectionWeighted(proximityEnemies);
-		//		influenceOfNPCs = -avgDirection;
+		//		if (d < BO)
+		//			orientation += e.transform.forward / d;
+		//		else
+		//		{
+		//			attraction += vect / d;
+		//		}
 		//	}
 		//}
-		//else
+
+		Vector3 vect;
+		float d;
+		foreach (PersonController e in inReact.withinRange)
+		{
+			vect = e.transform.position - this.transform.position;
+			d = vect.magnitude;
+			repulsion -= vect / d;
+		}
+		repulsion.Normalize();
+
+		foreach (PersonController e in inHearing.withinRange)
+		{
+			vect = e.transform.position - this.transform.position;
+			d = vect.magnitude;
+			orientation += e.transform.forward / d;
+		}
+		orientation.Normalize();
+
+		foreach (PersonController e in inReact.withinRange)
+		{
+			vect = e.transform.position - this.transform.position;
+			d = vect.magnitude;
+			attraction += vect / d;
+		}
+		attraction.Normalize();
+
+
+		//Vector3 repulsion = -averageDirectionWeighted(inReact.withinRange) * 2.0f;
+
+		//Vector3 orientation = Vector3.zero;
+		//foreach(EnemyController e in inHearing.withinRange)
 		//{
-		//	//whatever idle is
+		//	orientation += e.transform.forward;
 		//}
+		//orientation.Normalize();
+		//orientation = orientation * 1.5f;
+
+		//Vector3 attraction = averageDirectionWeighted(inSight.withinRange) * 1.0f;
+
+		repulsion.Normalize();
+		orientation.Normalize();
+		attraction.Normalize();
+
+		sum = repulsion * 3 + orientation * 2 + attraction;
+		sum.Normalize();
+		influenceOfNPCs = sum; 
 	}
 }
