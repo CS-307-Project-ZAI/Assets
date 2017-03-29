@@ -8,6 +8,10 @@ public class UIController : MonoBehaviour {
 
 	GameManager gm;
 
+	//Dictionary<string, ItemClass> inventory;
+
+	Dictionary<string, int> inventory;
+
 	//GameObject infoBoxLeft;
 	GameObject combatBoxRight;
 	GameObject commandBoxRight;
@@ -20,6 +24,9 @@ public class UIController : MonoBehaviour {
 
 	//Left info box
 	Text modeText;
+	Text clothCount;
+	Text woodCount;
+	Text metalCount;
 
 	//Combat box right
 	Text weapon;
@@ -73,6 +80,9 @@ public class UIController : MonoBehaviour {
 
 		//infoBoxLeft = transform.Find ("Info Box Left").gameObject;
 		modeText = GameObject.Find ("Mode").GetComponent<Text>();
+		clothCount = GameObject.Find ("Cloth_Count").GetComponent<Text> ();
+		woodCount = GameObject.Find ("Wood_Count").GetComponent<Text> ();
+		metalCount = GameObject.Find ("Metal_Count").GetComponent<Text> ();
 
 		//Combat box right
 		combatBoxRight = transform.Find ("Combat Box Right").gameObject;
@@ -166,6 +176,13 @@ public class UIController : MonoBehaviour {
 		}
 
 		modeText.text = activeGUI;
+
+		inventory = gm.player.playerItems;
+		//Counts items in playerItems and displays them
+		clothCount.text = inventory ["cloth"].ToString ();
+		woodCount.text = inventory ["wood"].ToString ();
+		metalCount.text = inventory ["metal"].ToString ();
+
 
 		if (!gm.build) {
 			this.build = false;
