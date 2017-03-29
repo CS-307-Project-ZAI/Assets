@@ -281,7 +281,7 @@ public class PlayerController : PersonController {
     public void addAlly(AllyController ally) {
 		allies.Add (ally);
 		ally.leader = this;
-		ally.mode = "Standstill";
+		ally.stats.mode = "Standstill";
 	}
 
 	void removeAlly(AllyController ally) {
