@@ -56,12 +56,14 @@ public class EnemyController : PersonController {
 		{
 			if(stats.mode == "Herding")
 			{
-				Vector3 direction = Vector3.ClampMagnitude(stats.influenceOfNPCs * 200, 0.1f * stats.speed) * Time.deltaTime;
+				Vector3 direction = Vector3.ClampMagnitude((stats.influenceOfNPCs + stats.movement) * 250, 0.2f * stats.speed) * Time.deltaTime;
 				transform.position += direction;
 				return;
 			}
 			if(stats.mode == "Idle")
 			{
+				Vector3 direction = Vector3.ClampMagnitude(stats.movement * 500, 0.2f * stats.speed) * Time.deltaTime;
+				transform.position += direction;
 				return;
 			}
 		}
