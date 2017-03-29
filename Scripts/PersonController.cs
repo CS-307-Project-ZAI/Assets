@@ -11,6 +11,9 @@ public class PersonController : MonoBehaviour {
 	public float rotationFix = 0.0f;
 	public string personName = "Person";
     public Wall wall;
+    public Dictionary<string, int> playerItems = new Dictionary<string, int>();
+	
+    
 
 	protected Vector3[] path = null;
 	protected int targetIndex;
@@ -38,6 +41,9 @@ public class PersonController : MonoBehaviour {
 		weapons.Add (w);
 		w.transform.parent = gameObject.transform;
         wall = Resources.Load("Walls/Tier1Wall", typeof(Wall)) as Wall;
+        playerItems.Add ("cloth", 0);
+        playerItems.Add ("wood", 0);
+        playerItems.Add ("metal", 0);
 	}
 
 	protected void fireWeapon() {
@@ -136,3 +142,4 @@ public class PersonController : MonoBehaviour {
 		return 0;
 	}
 }
+

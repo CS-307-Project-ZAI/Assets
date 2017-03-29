@@ -9,8 +9,11 @@ public class PlayerController : PersonController {
 	public bool wallRotation = false;
 	public int buildRate = 1;
     public QuestLog questLog;
+
+
     new void Start() {
 		base.Start ();
+
 
 	}
 
@@ -129,6 +132,25 @@ public class PlayerController : PersonController {
 			}
 		} else if (gm.playerMode == "Build") { //Get actions for Build mode
 			//Will Change Wall according to UI Wall Tier selected in the dropdown
+
+			//Wall recipes (TEMP):
+			//Tier1Wall: 5 Cloth
+			//Tier2Wall: 5 Wood
+			//Tier3Wall: 5 Metal
+
+			//Temp Commands
+			//Add materials to inventory
+
+			if (Input.GetKeyDown (KeyCode.I)) {
+				playerItems ["cloth"]++;
+			}
+			if (Input.GetKeyDown (KeyCode.O)) {
+				playerItems ["wood"]++;
+			}
+			if (Input.GetKeyDown (KeyCode.P)) {
+				playerItems ["metal"]++;
+			}
+
 			string loadWall = "Walls/" + wall.wallTier;
 			wall = Resources.Load(loadWall, typeof(Wall)) as Wall;
 			if (Input.GetKeyDown(KeyCode.R)) {
@@ -140,18 +162,63 @@ public class PlayerController : PersonController {
 			if (Input.GetKeyDown (KeyCode.Q)) {
 				gm.toggleBuildDestroy ();
 			}
-			if (gm.build && Input.GetMouseButtonDown (0)) {
+			//Debug.Log ("wall.wallTier: " + wall.wallTier);
+			bool enoughMaterials = true;
+
+			switch (wall.wallTier) {
+				case "Tier1Wall":
+					if (playerItems ["cloth"] < 5) {
+						Debug.Log ("Not enough cloth!");
+						enoughMaterials = false;
+					}
+					break;
+				case "Tier2Wall":
+					if (playerItems ["wood"] < 5) {
+						Debug.Log ("Not enough wood!");
+						enoughMaterials = false;
+					}
+					break;
+				case "Tier3Wall":
+					if (playerItems ["metal"] < 5) {
+						Debug.Log ("Not enough metal");
+						enoughMaterials = false;
+					}
+					break;
+			default:
+				enoughMaterials = true;
+				break;
+			}
+
+			if (gm.build && Input.GetMouseButtonDown (0) && enoughMaterials) {
 				Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
 				Wall newWall = (Wall)Instantiate (
-					wall, new Vector3 (mousePos.x, mousePos.y, 0), 
-					Quaternion.LookRotation (Vector3.forward, mousePos - transform.position));
+					               wall, new Vector3 (mousePos.x, mousePos.y, 0), 
+					               Quaternion.LookRotation (Vector3.forward, mousePos - transform.position));
 				newWall.gm = gm;
 				gm.walls.Add (newWall);
 				if (wallRotation) {
 					newWall.transform.Rotate (new Vector3 (0, 0, 90.0f));
 				}
 				gm.toggleBuild (true);
+
+				//after wall have been built
+				//need to remove items from inventory
+
+				switch (wall.wallTier) {
+				case "Tier1Wall":
+					playerItems ["cloth"] -= 5;
+					break;
+				case "Tier2Wall":
+					playerItems ["wood"] -= 5;
+					break;
+				case "Tier3Wall":
+					playerItems ["metal"] -= 5;
+					break;
+				default:
+					break;
+				}
 			}
+
 			if (gm.buildDestroy && Input.GetMouseButtonDown (0)) {
 				GameObject obj = gm.getClickedObject ();
 				if (obj != null) {
@@ -229,3 +296,5 @@ public class PlayerController : PersonController {
 		}
 	}
 }
+
+
