@@ -41,8 +41,10 @@ public class Bullet : MonoBehaviour {
 			if (!passthrough) {
 				kill = true;
 			}
-		}
-		if (col.gameObject.tag == "Block") {
+		} else if (col.gameObject.tag == "Block") {
+			kill = true;
+		} else if (col.gameObject.tag == "Pylon") {
+			col.gameObject.SendMessage ("ApplyDamage", damage);
 			kill = true;
 		}
 	}
