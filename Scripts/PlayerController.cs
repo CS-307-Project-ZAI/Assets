@@ -14,7 +14,8 @@ public class PlayerController : PersonController {
     new void Start() {
 		base.Start ();
 
-
+		questLog = GetComponent<QuestLog>();
+		questLog.questLogOwner = this;
 	}
 
 	// GMUpdate is called by the GameManager once per frame
@@ -27,9 +28,6 @@ public class PlayerController : PersonController {
 		if (weapons.Count > 0) {
 			getActions ();
 		}
-
-        questLog = GetComponent<QuestLog>();
-        questLog.questLogOwner = this;
     }
 
 	void getMovement() {
