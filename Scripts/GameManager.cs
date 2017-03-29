@@ -53,6 +53,7 @@ public class GameManager : MonoBehaviour {
         spawner = new EnemySpawner(this);
 		spawnPlayer ();
 		spawnAlly ();
+		cam.target = player;
 	}
 
 	// Update is called once per frame
@@ -86,7 +87,6 @@ public class GameManager : MonoBehaviour {
 
 		//Get Game Actions
 		getManagerActions ();
-
 
 		//Update UI
 		ui.GMUpdate();
@@ -130,7 +130,8 @@ public class GameManager : MonoBehaviour {
 		foreach (PersonController p in personKill) {
 			PathRequestManager.RemoveRequest (p);
 			if (p.gameObject.tag == "Enemy") {
-				enemies.Remove ((EnemyController) p);
+                player.questLog.addKill(1);
+                enemies.Remove ((EnemyController) p);
 				if (targetedEnemies.IndexOf ((EnemyController) p) >= 0) {
 					targetedEnemies.Remove ((EnemyController) p);
 				}
@@ -213,7 +214,6 @@ public class GameManager : MonoBehaviour {
         e.gm = this;
 		enemies.Add (e);
 	}
-
     
     public void spawnEnemy() {
         spawnEnemyAtLocation(Vector3.zero);

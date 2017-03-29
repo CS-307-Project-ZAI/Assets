@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class EnemyController : PersonController {
 
-	public PlayerController target;
+	public PersonController target;
     public float attackRate = 1.0f;
 	//public int damage = 2;
 
@@ -17,7 +17,9 @@ public class EnemyController : PersonController {
 		//PathRequestManager.RequestPath(this, transform.position, target.transform.position, OnPathFound);
 		stats = (AttributesZ)Instantiate(gm.AttributeZ);
 		stats.setOwner(this);
+
 		stats.mode = "Idle";
+		pathFindTimer = pathRefreshTime;
 	}
 	
 	// Update is called once per frame

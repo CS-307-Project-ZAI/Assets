@@ -4,10 +4,17 @@ using UnityEngine;
 
 public class AllyController : PersonController {
 
-	public PlayerController leader;
+
+	//public PlayerController leader;
 	//public string mode = "Command";
 	//private string prevMode = "Command";
 	//public string aggression = "Defensive";
+
+	public PlayerController leader = null;
+	public string mode = "Command";
+	private string prevMode = "Command";
+	public string aggression = "Defensive";
+
 
 	public List<Vector3> movePoints;
 	public List<GameObject> waypoints;
@@ -36,8 +43,10 @@ public class AllyController : PersonController {
 	//public List<string> modes = new List<string> {"Command", "Points", "Wander"};
 	//public List<string> aggressions = new List<string> {"Passive", "Defensive", "Offensive"};
 
-	// Use this for initialization
-	new void Start () {
+    public Quest questToGive = null;
+
+    // Use this for initialization
+    new void Start () {
 		base.Start ();
 
 		stats = (Attributes)Instantiate(gm.Attribute);
@@ -47,17 +56,43 @@ public class AllyController : PersonController {
 			positionFix = true;
 			onPath = false;
 		}
+
 		
 	}
 	
-	// Update is called once per frame
-	public void GMUpdate () {
-		if (stats.prevMode != stats.mode) {
+
+
+    public void becomeFollower(PlayerController p)
+    {
+        leader = p;
+        questToGive = null;
+    }
+
+    public void assignQuest(QuestLog questLog)
+    {
+        if (questToGive == null) initRandomQuest();
+        questLog.addQuest(questToGive);
+    }
+
+    private void initRandomQuest()
+    {
+        if (questToGive == null && leader == null)
+        {
+            int questID = Random.Range(0, 1000);
+            questToGive = new Quest(this, questID, QuestObjective.KILL, 1, (int)Random.Range(3, 10));
+        }
+    }
+
+    // Update is called once per frame
+    public void GMUpdate () {
+		if (stats.prevMode != stats.mode) { 
 			stats.prevMode = stats.mode;
+
 			StopCoroutine ("FollowPath");
 			if (stats.mode == "Points") {
 				positionFix = true;
 				onPath = false;
+				Debug.Log (toPoint);
 				targetPos = movePoints [toPoint];
 				PathRequestManager.RequestPath (this, transform.position, targetPos, OnPathFound);
 			}
@@ -89,7 +124,8 @@ public class AllyController : PersonController {
 		case "Points":
 			if (movePoints.Count > 0) {
 				//Check distance to next point
-				if (euclideanDistance (transform.position, targetPos) < .2) {
+				if (getNextPoint) {
+					getNextPoint = false;
 					fromPoint++;
 					fromPoint %= movePoints.Count;
 					toPoint = (fromPoint + 1) % movePoints.Count;
