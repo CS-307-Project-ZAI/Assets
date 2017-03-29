@@ -11,7 +11,6 @@ public class AttackCollider : MonoBehaviour {
 	}
 
 	void OnTriggerStay2D(Collider2D col) {
-		Debug.Log ("Attack!");
 		if (col.gameObject.tag == "Player") {
 			if (owner.attackTimer >= owner.attackRate) {
 				col.gameObject.SendMessage ("ApplyDamage", owner.damage);
