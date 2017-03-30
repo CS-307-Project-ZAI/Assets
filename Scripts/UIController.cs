@@ -212,8 +212,8 @@ public class UIController : MonoBehaviour {
 		case "Command":
 			if (gm.selectedAlly != null) {
 				selected.text = gm.selectedAlly.personName;
-				selectedMode.value = gm.selectedAlly.modes.IndexOf (gm.selectedAlly.mode);
-				selectedAggression.value = gm.selectedAlly.aggressions.IndexOf (gm.selectedAlly.aggression);
+				selectedMode.value = gm.selectedAlly.stats.modes.IndexOf (gm.selectedAlly.stats.mode);
+				selectedAggression.value = gm.selectedAlly.stats.aggressions.IndexOf (gm.selectedAlly.stats.aggression);
 				selectedMode.interactable = true;
 				selectedAggression.interactable = true;
 				waypointButton.interactable = true;
@@ -281,13 +281,13 @@ public class UIController : MonoBehaviour {
 
     private void DropdownChangeMode(Dropdown target) {
 		if (gm.selectedAlly != null) {
-			gm.selectedAlly.mode = target.options[target.value].text;
+			gm.selectedAlly.stats.mode = target.options[target.value].text;
 		}
 	}
 
 	private void DropdownChangeAggression(Dropdown target) {
 		if (gm.selectedAlly != null) {
-			gm.selectedAlly.aggression = target.options[target.value].text;
+			gm.selectedAlly.stats.aggression = target.options[target.value].text;
 		}
 	}
 

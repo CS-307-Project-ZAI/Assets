@@ -4,10 +4,17 @@ using UnityEngine;
 
 public class AllyController : PersonController {
 
+
+	//public PlayerController leader;
+	//public string mode = "Command";
+	//private string prevMode = "Command";
+	//public string aggression = "Defensive";
+
 	public PlayerController leader = null;
 	public string mode = "Command";
 	private string prevMode = "Command";
 	public string aggression = "Defensive";
+
 
 	public List<Vector3> movePoints;
 	public List<GameObject> waypoints;
@@ -32,17 +39,20 @@ public class AllyController : PersonController {
 
 	public Attributes stats;
 
-	[HideInInspector]
-	public List<string> modes = new List<string> {"Command", "Points", "Wander"};
-	public List<string> aggressions = new List<string> {"Passive", "Defensive", "Offensive"};
+	//[HideInInspector]
+	//public List<string> modes = new List<string> {"Command", "Points", "Wander"};
+	//public List<string> aggressions = new List<string> {"Passive", "Defensive", "Offensive"};
 
     public Quest questToGive = null;
 
     // Use this for initialization
     new void Start () {
 		base.Start ();
+
+		stats = (Attributes)Instantiate(gm.Attribute);
+		stats.setOwner(this);
 		targetPos = transform.position;
-		if (mode == "Points") {
+		if (stats.mode == "Points") {
 			positionFix = true;
 			onPath = false;
 		}
@@ -67,10 +77,11 @@ public class AllyController : PersonController {
 
     // Update is called once per frame
     public void GMUpdate () {
-		if (prevMode != mode) {
-			prevMode = mode;
+		if (stats.prevMode != stats.mode) { 
+			stats.prevMode = stats.mode;
+
 			StopCoroutine ("FollowPath");
-			if (mode == "Points") {
+			if (stats.mode == "Points") {
 				positionFix = true;
 				onPath = false;
 				Debug.Log (toPoint);
@@ -93,7 +104,7 @@ public class AllyController : PersonController {
 
 	void getMovement() {
 		pathFindTimer += (pathFindTimer >= pathRefreshTime ? 0.0f : Time.deltaTime);
-		switch (mode) {
+		switch (stats.mode) {
 		case "Command":
 			if (targetPos != transform.position) {
 				if (pathFindTimer >= pathRefreshTime) {
@@ -130,7 +141,7 @@ public class AllyController : PersonController {
 	}
 
 	void getRotation() {
-		switch (mode) {
+		switch (stats.mode) {
 		case "Command":
 			transform.rotation = Quaternion.LookRotation (Vector3.forward, lookPoint);
 			transform.Rotate (new Vector3 (0, 0, rotationFix));
@@ -144,52 +155,105 @@ public class AllyController : PersonController {
 		}
 	}
 
-	void getActions() {
-		if (weapons.Count > 0) {
-			//Check for attack opportunities;
-			EnemyController closestEnemy = null;
-			float closestMag = 10.0f;
-			foreach (EnemyController e in gm.enemies) {
-				if (Mathf.Abs (e.transform.position.x - transform.position.x) < 3 && Mathf.Abs (e.transform.position.y - transform.position.y) < 3) {
-					float mag = Vector3.Magnitude (new Vector3(e.transform.position.x - transform.position.x, e.transform.position.y - transform.position.y, 0));
-					if (mag < closestMag) {
-						closestMag = mag;
-						closestEnemy = e;
-					}
-				}
-			}
-			foreach (EnemyController e in gm.targetedEnemies) {
-				float mag = Vector3.Magnitude (new Vector3(e.transform.position.x - transform.position.x, e.transform.position.y - transform.position.y, 0));
-				if (closestMag > 1) {
-					closestMag = mag;
-					closestEnemy = e;
-				}
-			}
-			if (closestEnemy != null) {
-				if (!performingAction && onPath) {
+	//void getActions() {
+	//	if (weapons.Count > 0) {
+	//		//Check for attack opportunities;
+	//		EnemyController closestEnemy = null;
+	//		float closestMag = 10.0f;
+	//		foreach (EnemyController e in gm.enemies) {
+	//			if (Mathf.Abs (e.transform.position.x - transform.position.x) < 3 && Mathf.Abs (e.transform.position.y - transform.position.y) < 3) {
+	//				float mag = Vector3.Magnitude (new Vector3(e.transform.position.x - transform.position.x, e.transform.position.y - transform.position.y, 0));
+	//				if (mag < closestMag) {
+	//					closestMag = mag;
+	//					closestEnemy = e;
+	//				}
+	//			}
+	//		}
+	//		foreach (EnemyController e in gm.targetedEnemies) {
+	//			float mag = Vector3.Magnitude (new Vector3(e.transform.position.x - transform.position.x, e.transform.position.y - transform.position.y, 0));
+	//			if (closestMag > 1) {
+	//				closestMag = mag;
+	//				closestEnemy = e;
+	//			}
+	//		}
+	//		if (closestEnemy != null) {
+	//			if (!performingAction && onPath) {
+	//				previousPosition = transform.position;
+	//			}
+	//			performingAction = true;
+	//			if (closestMag < flightDistance) {
+	//				actionPoint = closestEnemy.transform.position + 2 * (transform.position - closestEnemy.transform.position);
+	//				Vector3 direction = Vector3.ClampMagnitude(actionPoint * 1000, moveSpeed) * Time.deltaTime;
+	//				transform.position += direction;
+	//				return;
+	//			} else {
+	//				actionPoint = closestEnemy.transform.position;
+	//				if (weapons [currentWeapon].currentLoaded > 0) {
+	//					if (actionTimer >= actionDelay) {
+	//						fireWeaponAt (actionPoint);
+	//					} else {
+	//						actionTimer += Time.deltaTime;
+	//					}
+	//				} else {
+	//					reloading = true;
+	//				}
+	//			}
+	//		} else {
+	//			if (performingAction) {
+	//				if (Mathf.Abs (previousPosition.x - transform.position.x) > .001 || Mathf.Abs (previousPosition.y - transform.position.y) > .001) {
+	//					positionFix = true;
+	//					onPath = false;
+	//				}
+	//			}
+	//			performingAction = false;
+	//			actionTimer = 0.0f;
+	//		}
+	//	}
+	//}
+
+	void getActions()
+	{
+		if (weapons.Count > 0)
+		{
+			if (stats.closestEnemy != null)
+			{
+				if (!performingAction && onPath)
+				{
 					previousPosition = transform.position;
 				}
 				performingAction = true;
-				if (closestMag < flightDistance) {
-					actionPoint = closestEnemy.transform.position + 2 * (transform.position - closestEnemy.transform.position);
-					Vector3 direction = Vector3.ClampMagnitude(actionPoint * 1000, moveSpeed) * Time.deltaTime;
+				if (stats.Panicked)
+				{
+					Vector3 direction = Vector3.ClampMagnitude(stats.influenceOfNPCs * 200, 0.2f * stats.speed) * Time.deltaTime;
 					transform.position += direction;
 					return;
-				} else {
-					actionPoint = closestEnemy.transform.position;
-					if (weapons [currentWeapon].currentLoaded > 0) {
-						if (actionTimer >= actionDelay) {
-							fireWeaponAt (actionPoint);
-						} else {
+				}
+				else
+				{
+					actionPoint = stats.closestEnemy.transform.position;
+					if (weapons[currentWeapon].currentLoaded > 0)
+					{
+						if (actionTimer >= actionDelay)
+						{
+							fireWeaponAt(actionPoint);
+						}
+						else
+						{
 							actionTimer += Time.deltaTime;
 						}
-					} else {
+					}
+					else
+					{
 						reloading = true;
 					}
 				}
-			} else {
-				if (performingAction) {
-					if (Mathf.Abs (previousPosition.x - transform.position.x) > .001 || Mathf.Abs (previousPosition.y - transform.position.y) > .001) {
+			}
+			else
+			{
+				if (performingAction)
+				{
+					if (Mathf.Abs(previousPosition.x - transform.position.x) > .001 || Mathf.Abs(previousPosition.y - transform.position.y) > .001)
+					{
 						positionFix = true;
 						onPath = false;
 					}
@@ -200,8 +264,9 @@ public class AllyController : PersonController {
 		}
 	}
 
+
 	public void commandMove(Vector3 pos) {
-		mode = "Command";
+		stats.mode = "Command";
 		targetPos = new Vector3(pos.x, pos.y, 0);
 		PathRequestManager.RequestPath (this, transform.position, targetPos, OnPathFound);
 	}
