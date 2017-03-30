@@ -48,7 +48,7 @@ public class AllyController : PersonController {
 		}
 		stats = (Attributes)Instantiate(gm.Attribute);
 		stats.setOwner(this);
-        initRandomQuest();
+        Quest.initRandomQuest(this);
     }
 
     public void becomeFollower(PlayerController p)
@@ -60,18 +60,9 @@ public class AllyController : PersonController {
     public void assignQuest(QuestLog questLog)
     {
 		if (questToGive == null) {
-			initRandomQuest ();
+			Quest.initRandomQuest (this);
 		}
         questLog.addQuest(questToGive);
-    }
-
-    private void initRandomQuest()
-    {
-        if (questToGive == null && leader == null)
-        {
-            int questID = Random.Range(0, 1000);
-            questToGive = new Quest(this, questID, QuestObjective.KILL, 1, (int)Random.Range(3, 10));
-        }
     }
 
     // Update is called once per frame

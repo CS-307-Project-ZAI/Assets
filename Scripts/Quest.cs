@@ -14,16 +14,31 @@ public class Quest{
     private int objectiveID;
     private string questText = "";
     private AllyController questGiver;
+	private static List<int> idList = new List<int>();
 
-    public Quest(AllyController _questGiver, int _questID, QuestObjective _questObjective, int _objectiveID, int _completionAmmount)
+    public Quest(AllyController _questGiver, QuestObjective _questObjective, int _objectiveID, int _completionAmmount)
     {
-        questGiver = _questGiver;
-        questID = _questID;
-        completionAmmount = _completionAmmount;
+		do {
+			questID = Random.Range(0, 1000);
+		} while (idList.Contains(questID));
+		Quest.idList.Add (questID);
+
+		questGiver = _questGiver;
         questObjective = _questObjective;
+		Debug.Log ("Quest Objective: " + questObjective);
         objectiveID = _objectiveID;
+		Debug.Log ("ObjectiveID: " + objectiveID);
+		completionAmmount = _completionAmmount;
         setName();
     }
+
+	public static void initRandomQuest(AllyController owner) {
+		if (owner.questToGive == null && owner.leader == null) {
+			QuestObjective randObjective = (QuestObjective)Random.Range (0, System.Enum.GetValues(typeof(QuestObjective)).Length - 1);
+			//Debug.Log("RandObjective: " + randObjective.GetHashCode());
+			owner.questToGive = new Quest(owner, randObjective, (randObjective.Equals(QuestObjective.KILL) ? 1 : Random.Range(2, 4)), (int)Random.Range(3, 10));
+		}
+	}
 
     public void addProgress() {
         if (!hasBeenCompleted) {
@@ -35,9 +50,9 @@ public class Quest{
     //return name from item id
     private string getNameofObjectiveID(int id) {
         switch (id) {
-            case 1: return "zombie";
-            case 2: return "wood";
-            case 3: return "metal";
+            case 1: return "Zombie";
+            case 2: return "Wood";
+            case 3: return "Metal";
         }
         return "DOES NOT EXIST";
     }
@@ -48,7 +63,7 @@ public class Quest{
 
     public string getLogString() {
         string logString = questName + ": " + currentProgress + " of " + completionAmmount;
-        if (hasBeenCompleted == true) logString = questName + ": complete";
+        if (hasBeenCompleted == true) logString = questName + ": Complete";
         return logString;
     }
 
@@ -81,7 +96,7 @@ public class Quest{
         }
         else if (questObjective == QuestObjective.COLLECT)
         {
-            questName = "Quest: Collect " + completionAmmount + " " + getNameofObjectiveID(objectiveID) + "s";
+            questName = "Quest: Collect " + completionAmmount + " " + getNameofObjectiveID(objectiveID);
         }
         else {
             questName = "Quest: Other";

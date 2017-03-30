@@ -149,7 +149,6 @@ public class GameManager : MonoBehaviour {
 		foreach (PersonController p in personKill) {
 			PathRequestManager.RemoveRequest (p);
 			if (p.gameObject.tag == "Enemy") {
-                player.questLog.addKill(1);
                 enemies.Remove ((EnemyController) p);
 				if (targetedEnemies.IndexOf ((EnemyController) p) >= 0) {
 					targetedEnemies.Remove ((EnemyController) p);
@@ -162,6 +161,7 @@ public class GameManager : MonoBehaviour {
 					selectRing = null;
 				}
 			}
+			p.StopCoroutine ("FollowPath");
 			Destroy (p.gameObject);
 		}
 		personKill.Clear ();
