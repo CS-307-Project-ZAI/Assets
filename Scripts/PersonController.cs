@@ -61,12 +61,19 @@ public class PersonController : MonoBehaviour {
 		}
 	}
 
-	void ApplyDamage(int dmg) {
+	public void applyDamage(int dmg, PersonController from) {
 		this.health -= dmg;
 		if (this.health < 0) {
 			health = 0;
 		}
 		aliveCheck ();
+		if (kill) {
+			if (from.tag == "Player" && this.tag == "Enemy") {
+				PlayerController pc = (PlayerController)from;
+				pc.questLog.addKill (1);
+				Debug.Log ("Kill + 1");
+			}
+		}
 	}
 
 	public virtual void aliveCheck() {
