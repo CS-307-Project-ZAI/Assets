@@ -78,7 +78,7 @@ public class TriggersAttributes : MonoBehaviour
 	}
 
 	// Update is called once per frame
-	void Update()
+	public void GMUpdate()
 	{
 		this.transform.position = parentAttr.transform.position;
 		for (int i = 0; i < withinRange.Count; i++)

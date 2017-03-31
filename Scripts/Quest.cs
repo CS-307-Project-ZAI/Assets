@@ -16,8 +16,7 @@ public class Quest{
     private AllyController questGiver;
 	private static List<int> idList = new List<int>();
 
-    public Quest(AllyController _questGiver, QuestObjective _questObjective, int _objectiveID, int _completionAmmount)
-    {
+    public Quest(AllyController _questGiver, QuestObjective _questObjective, int _objectiveID, int _completionAmmount) {
 		do {
 			questID = Random.Range(0, 1000);
 		} while (idList.Contains(questID));
@@ -35,7 +34,6 @@ public class Quest{
 	public static void initRandomQuest(AllyController owner) {
 		if (owner.questToGive == null && owner.leader == null) {
 			QuestObjective randObjective = (QuestObjective)Random.Range (0, System.Enum.GetValues(typeof(QuestObjective)).Length - 1);
-			//Debug.Log("RandObjective: " + randObjective.GetHashCode());
 			owner.questToGive = new Quest(owner, randObjective, (randObjective.Equals(QuestObjective.KILL) ? 1 : Random.Range(2, 4)), (int)Random.Range(3, 10));
 		}
 	}
@@ -90,12 +88,10 @@ public class Quest{
     }
 
     public void setName() {
-        if (questObjective == QuestObjective.KILL)
-        {
+        if (questObjective == QuestObjective.KILL) {
             questName = "Quest: Kill " + completionAmmount + " " + getNameofObjectiveID(objectiveID) + "s";
-        }
-        else if (questObjective == QuestObjective.COLLECT)
-        {
+        } 
+		else if (questObjective == QuestObjective.COLLECT) {
             questName = "Quest: Collect " + completionAmmount + " " + getNameofObjectiveID(objectiveID);
         }
         else {

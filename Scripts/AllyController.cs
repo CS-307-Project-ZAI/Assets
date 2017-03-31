@@ -4,17 +4,10 @@ using UnityEngine;
 
 public class AllyController : PersonController {
 
-
-	//public PlayerController leader;
-	//public string mode = "Command";
-	//private string prevMode = "Command";
-	//public string aggression = "Defensive";
-
 	public PlayerController leader = null;
 	public string mode = "Command";
 	private string prevMode = "Command";
 	public string aggression = "Defensive";
-
 
 	public List<Vector3> movePoints;
 	public List<GameObject> waypoints;
@@ -61,22 +54,11 @@ public class AllyController : PersonController {
         Quest.initRandomQuest(this);
     }
 
-    public void becomeFollower(PlayerController p)
-    {
-        leader = p;
-        questToGive = null;
-    }
-
-    public void assignQuest(QuestLog questLog)
-    {
-		if (questToGive == null) {
-			Quest.initRandomQuest (this);
-		}
-        questLog.addQuest(questToGive);
-    }
-
     // Update is called once per frame
     public void GMUpdate () {
+		if (kill) {
+			return;
+		}
 		if (stats.prevMode != stats.mode) { 
 			stats.prevMode = stats.mode;
 
@@ -100,6 +82,7 @@ public class AllyController : PersonController {
 		foreach (Weapon w in weapons) {
 			w.ControlledUpdate ();
 		}
+		stats.GMUpdate ();
 	}
 
 	void getMovement() {
@@ -211,49 +194,33 @@ public class AllyController : PersonController {
 	//	}
 	//}
 
-	void getActions()
-	{
-		if (weapons.Count > 0)
-		{
-			if (stats.closestEnemy != null)
-			{
-				if (!performingAction && onPath)
-				{
+	void getActions() {
+		if (weapons.Count > 0) {
+			if (stats.closestEnemy != null) {
+				if (!performingAction && onPath) {
 					previousPosition = transform.position;
 				}
 				performingAction = true;
-				if (stats.Panicked)
-				{
+				if (stats.Panicked) {
 					Vector3 direction = Vector3.ClampMagnitude(stats.influenceOfNPCs * 200, 0.2f * stats.speed) * Time.deltaTime;
 					transform.position += direction;
 					return;
 				}
-				else
-				{
+				else {
 					actionPoint = stats.closestEnemy.transform.position;
-					if (weapons[currentWeapon].currentLoaded > 0)
-					{
-						if (actionTimer >= actionDelay)
-						{
+					if (weapons[currentWeapon].currentLoaded > 0) {
+						if (actionTimer >= actionDelay) {
 							fireWeaponAt(actionPoint);
-						}
-						else
-						{
+						} else {
 							actionTimer += Time.deltaTime;
 						}
-					}
-					else
-					{
+					} else {
 						reloading = true;
 					}
 				}
-			}
-			else
-			{
-				if (performingAction)
-				{
-					if (Mathf.Abs(previousPosition.x - transform.position.x) > .001 || Mathf.Abs(previousPosition.y - transform.position.y) > .001)
-					{
+			} else {
+				if (performingAction) {
+					if (Mathf.Abs(previousPosition.x - transform.position.x) > .001 || Mathf.Abs(previousPosition.y - transform.position.y) > .001) {
 						positionFix = true;
 						onPath = false;
 					}
@@ -264,6 +231,17 @@ public class AllyController : PersonController {
 		}
 	}
 
+	public void becomeFollower(PlayerController p) {
+		leader = p;
+		questToGive = null;
+	}
+
+	public void assignQuest(QuestLog questLog) {
+		if (questToGive == null) {
+			Quest.initRandomQuest (this);
+		}
+		questLog.addQuest(questToGive);
+	}
 
 	public void commandMove(Vector3 pos) {
 		stats.mode = "Command";
@@ -282,7 +260,7 @@ public class AllyController : PersonController {
 	}
 
 	public void removeWaypointByClick(Vector3 pos) {
-		GameObject obj = gm.getClickedObject ();
+		GameObject obj = gm.getClickedObject (0);
 		if (obj.tag == "Waypoint") {
 			movePoints.RemoveAt(waypoints.IndexOf (obj));
 			waypoints.Remove (obj);
