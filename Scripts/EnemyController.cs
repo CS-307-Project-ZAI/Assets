@@ -6,14 +6,14 @@ public class EnemyController : PersonController {
 
 	public PersonController target;
     public float attackRate = 1.0f;
-	//public int damage = 2;
+	public int damage = 2;
 
 	public AttackCollider ac;
 
 	public AttributesZ stats;
 
 	// Use this for initialization
-	new void Start () {
+	void Start () {
 		attackTimer = 0.0f;
 		//gm = FindObjectOfType<GameManager> ();
 		//PathRequestManager.RequestPath(this, transform.position, target.transform.position, OnPathFound);
@@ -33,7 +33,16 @@ public class EnemyController : PersonController {
 	
 	// Update is called once per frame
 	public void GMUpdate () {
+		if (kill) {
+			return;
+		}
         attackTimer += Time.deltaTime;
+		if (stats == null) {
+			stats = (AttributesZ)Instantiate(gm.AttributeZ);
+			stats.setOwner(this);
+			stats.mode = "Idle";
+		}
+		stats.GMUpdate ();
 		getMovement ();
 		getRotation ();
 		if (targetTag != null) {

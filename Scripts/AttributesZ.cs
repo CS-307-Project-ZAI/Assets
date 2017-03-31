@@ -36,20 +36,25 @@ public class AttributesZ : Attributes
 
 		this.transform.SetParent(owner.transform);
 		setAttributes(owner.gm.difficulty);
+		start = true;
 	}
 
 	// Update is called once per frame
-	void Update()
+	public void GMUpdate()
 	{
-		this.transform.position = owner.transform.position;
-		for (int i = 0; i < proximityNPCs.Count; i++)
-		{
-			if (proximityNPCs[i] == null)
-				proximityNPCs.RemoveAt(i);
-			if (proximityNPCs[i].gameObject.tag == "Player" || proximityNPCs[i].gameObject.tag == "Ally")
-				enemyInRange = true;
+		if (start) {
+			inSight.GMUpdate ();
+			inHearing.GMUpdate ();
+			inReact.GMUpdate ();
+			this.transform.position = owner.transform.position;
+			for (int i = 0; i < proximityNPCs.Count; i++) {
+				if (proximityNPCs [i] == null)
+					proximityNPCs.RemoveAt (i);
+				if (proximityNPCs [i].gameObject.tag == "Player" || proximityNPCs [i].gameObject.tag == "Ally")
+					enemyInRange = true;
+			}
+			getInfluences (Time.deltaTime);
 		}
-		getInfluences(Time.deltaTime);
 	}
 
 	new public void setAttributes(string difficulty)

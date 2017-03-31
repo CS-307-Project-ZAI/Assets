@@ -64,6 +64,8 @@ public class UIController : MonoBehaviour {
     Text questLog4;
     Text questLog5;
 
+	private bool uipaused = true;
+
     private string activeGUI = "";
 
 	public void GMStart() {
@@ -118,41 +120,46 @@ public class UIController : MonoBehaviour {
         questLog3 = GameObject.Find("log3").GetComponent<Text>();
         questLog4 = GameObject.Find("log4").GetComponent<Text>();
         questLog5 = GameObject.Find("log5").GetComponent<Text>();
-
+		updateHealthBar ();
     }
 
 	public void GMUpdate() {
 		if (gm.paused) {
-			tint.color = new Color (0, 0, 0, 0.8f);
-			if (settingsActive) {
-				pauseMenu.gameObject.SetActive (false);
-				settingsMenu.gameObject.SetActive (true);
-				switch (gm.difficulty) {
-				case "Easy":
-					easyButton.interactable = false;
-					mediumButton.interactable = true;
-					hardButton.interactable = true;
-					break;
-				case "Medium":
-					easyButton.interactable = true;
-					mediumButton.interactable = false;
-					hardButton.interactable = true;
-					break;
-				case "Hard":
-					easyButton.interactable = true;
-					mediumButton.interactable = true;
-					hardButton.interactable = false;
-					break;
+			if (!uipaused) {
+				tint.color = new Color (0, 0, 0, 0.8f);
+				if (settingsActive) {
+					pauseMenu.gameObject.SetActive (false);
+					settingsMenu.gameObject.SetActive (true);
+					switch (gm.difficulty) {
+					case "Easy":
+						easyButton.interactable = false;
+						mediumButton.interactable = true;
+						hardButton.interactable = true;
+						break;
+					case "Medium":
+						easyButton.interactable = true;
+						mediumButton.interactable = false;
+						hardButton.interactable = true;
+						break;
+					case "Hard":
+						easyButton.interactable = true;
+						mediumButton.interactable = true;
+						hardButton.interactable = false;
+						break;
+					}
+				} else {
+					pauseMenu.gameObject.SetActive (true);
+					settingsMenu.gameObject.SetActive (false);
 				}
-			} else {
-				pauseMenu.gameObject.SetActive (true);
-				settingsMenu.gameObject.SetActive (false);
+				uipaused = true;
 			}
 			return;
+		} else if (uipaused) {
+			tint.color = new Color (0.5f, 0.5f, 0.5f, 0.0f);
+			pauseMenu.gameObject.SetActive (false);
+			settingsMenu.gameObject.SetActive (false);
+			uipaused = false;
 		}
-		tint.color = new Color (0.5f, 0.5f, 0.5f, 0.0f);
-		pauseMenu.gameObject.SetActive (false);
-		settingsMenu.gameObject.SetActive (false);
 
 		if (activeGUI != gm.playerMode) {
 			activeGUI = gm.playerMode;
@@ -248,14 +255,6 @@ public class UIController : MonoBehaviour {
 			break;
 		}
 
-		//Update Health Bar
-		playerHealth.text = gm.player.health.ToString();
-		float healthWidth = ((float)gm.player.health / 50.0f) * 290;
-		if (healthWidth < 0) {
-			healthWidth = 0.0f;
-		}
-		healthBar.sizeDelta = new Vector2 (healthWidth, 30);
-
         if (gm.player.questLog == null) {
             Debug.Log("no quest log");
             return;
@@ -266,6 +265,16 @@ public class UIController : MonoBehaviour {
         updateQuestLogText(questLog4, gm.player.questLog.questAt(3));
         updateQuestLogText(questLog5, gm.player.questLog.questAt(4));
     }
+
+	public void updateHealthBar() {
+		//Update Health Bar
+		playerHealth.text = gm.player.health.ToString();
+		float healthWidth = ((float)gm.player.health / 50.0f) * 290;
+		if (healthWidth < 0) {
+			healthWidth = 0.0f;
+		}
+		healthBar.sizeDelta = new Vector2 (healthWidth, 30);
+	}
 
     private void updateQuestLogText(Text t, Quest q)
     {

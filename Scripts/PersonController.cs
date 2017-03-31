@@ -63,8 +63,8 @@ public class PersonController : MonoBehaviour {
 
 	public void applyDamage(int dmg, PersonController from) {
 		this.health -= dmg;
-		if (this.health < 0) {
-			health = 0;
+		if (this.tag == "Player") {
+			gm.ui.updateHealthBar ();
 		}
 		aliveCheck ();
 		if (kill) {
@@ -112,8 +112,10 @@ public class PersonController : MonoBehaviour {
 		if (pathSuccessful) {
 			path = newPath;
 			targetIndex = 0;
-			StopCoroutine("FollowPath");
-			StartCoroutine("FollowPath");
+			//SendMessage ("StopCoroutine", "FollowPath");
+			//SendMessage ("StartCoroutine", "FollowPath");
+			StopCoroutine ("FollowPath");
+			StartCoroutine ("FollowPath");
 		}
 	}
 

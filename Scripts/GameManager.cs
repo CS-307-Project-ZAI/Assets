@@ -52,11 +52,11 @@ public class GameManager : MonoBehaviour {
 	void Start () {
 		ui = FindObjectOfType<UIController> ();
 		cam = FindObjectOfType<CameraController> ();
-		ui.GMStart ();
         spawner = new EnemySpawner(this);
 		spawnPlayer ();
 		spawnAlly ();
 		cam.target = player;
+		ui.GMStart ();
 	}
 
 	// Update is called once per frame
@@ -88,6 +88,8 @@ public class GameManager : MonoBehaviour {
 		}
         updateDayNightCycle();
 
+		spawner.checkSpawnTime();
+
 		//Get Game Actions
 		getManagerActions ();
 
@@ -99,6 +101,14 @@ public class GameManager : MonoBehaviour {
 
 		//Update Player
 		player.GMUpdate ();
+
+		//Update Bullets
+		foreach (Bullet b in bullets) {
+			b.GMUpdate ();
+			if (b.kill) {
+				bulletKill.Add (b);
+			}
+		}
 
 		//Update Enemies
 		foreach (EnemyController e in enemies) {
@@ -117,6 +127,18 @@ public class GameManager : MonoBehaviour {
 			recheckPaths = false;
 		}
 
+		//Updated selectedAlly
+		if (selectedAlly != null) {
+			if (selectRing == null) {
+				string load = "Other/SelectRing";
+				selectRing = (GameObject) Instantiate(Resources.Load (load, typeof(GameObject)) as GameObject);
+				foreach (GameObject obj in selectedAlly.waypoints) {
+					obj.SetActive (true);
+				}
+			}
+			selectRing.transform.position = new Vector3 (selectedAlly.transform.position.x, selectedAlly.transform.position.y, 0);
+		}
+
 		//Update Walls
 		foreach (Wall w in walls) {
 			w.GMUpdate ();
@@ -131,18 +153,6 @@ public class GameManager : MonoBehaviour {
 			if (p.kill) {
 				pylonKill.Add (p);
 			}
-		}
-
-		//Updated selectedAlly
-		if (selectedAlly != null) {
-			if (selectRing == null) {
-				string load = "Other/SelectRing";
-				selectRing = (GameObject) Instantiate(Resources.Load (load, typeof(GameObject)) as GameObject);
-				foreach (GameObject obj in selectedAlly.waypoints) {
-					obj.SetActive (true);
-				}
-			}
-			selectRing.transform.position = new Vector3 (selectedAlly.transform.position.x, selectedAlly.transform.position.y, 0);
 		}
 
 		//Destroy each object in the kill list and clear it
@@ -180,20 +190,12 @@ public class GameManager : MonoBehaviour {
 		}
 		pylonKill.Clear ();
 
-		//Update Bullets
-		foreach (Bullet b in bullets) {
-			b.GMUpdate ();
-			if (b.kill) {
-				bulletKill.Add (b);
-			}
-		}
+		//Destroy bullets in kill list and clear it
 		foreach (Bullet b in bulletKill) {
 			bullets.Remove (b);
 			Destroy (b.gameObject);
 		}
 		bulletKill.Clear ();
-
-        spawner.checkSpawnTime();
     }
 
 	void getManagerActions() {
@@ -215,10 +217,15 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
-	public GameObject getClickedObject() {
+	public GameObject getClickedObject(int option) {
 		//Converting Mouse Pos to 2D (vector2) World Pos
 		Vector2 rayPos = new Vector2(Camera.main.ScreenToWorldPoint(Input.mousePosition).x, Camera.main.ScreenToWorldPoint(Input.mousePosition).y);
-		RaycastHit2D hit=Physics2D.Raycast(rayPos, Vector2.zero, 0f);
+		RaycastHit2D hit;
+		if (option == 1) {
+			hit = Physics2D.Raycast (rayPos, Vector2.zero, 0f, pf.grid.unwalkableMask);
+		} else {
+			hit = Physics2D.Raycast (rayPos, Vector2.zero, 0f);
+		}
 		if (hit) {
 			Debug.Log (hit.transform.name);
 			return hit.transform.gameObject;
