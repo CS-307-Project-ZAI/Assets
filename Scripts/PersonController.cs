@@ -61,12 +61,19 @@ public class PersonController : MonoBehaviour {
 		}
 	}
 
-	void ApplyDamage(int dmg) {
+	public void applyDamage(int dmg, PersonController from) {
 		this.health -= dmg;
-		if (this.health < 0) {
-			health = 0;
+		if (this.tag == "Player") {
+			gm.ui.updateHealthBar ();
 		}
 		aliveCheck ();
+		if (kill) {
+			if (from.tag == "Player" && this.tag == "Enemy") {
+				PlayerController pc = (PlayerController)from;
+				pc.questLog.addKill (1);
+				Debug.Log ("Kill + 1");
+			}
+		}
 	}
 
 	public virtual void aliveCheck() {
@@ -105,8 +112,10 @@ public class PersonController : MonoBehaviour {
 		if (pathSuccessful) {
 			path = newPath;
 			targetIndex = 0;
-			StopCoroutine("FollowPath");
-			StartCoroutine("FollowPath");
+			//SendMessage ("StopCoroutine", "FollowPath");
+			//SendMessage ("StartCoroutine", "FollowPath");
+			StopCoroutine ("FollowPath");
+			StartCoroutine ("FollowPath");
 		}
 	}
 

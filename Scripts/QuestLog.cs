@@ -34,13 +34,20 @@ public class QuestLog : MonoBehaviour {
         }
     }
 
+	public void itemCollected(int itemId) {
+		foreach (Quest q in quests) {
+			if (!q.isComplete () && q.getQuestObjective () == QuestObjective.COLLECT) {
+
+			}
+		}
+	}
+
     public string questLogString(Quest q) {
         return q.getLogString();
     }
 
 	public bool addQuest(Quest q) {
-        if (quests.Count < questLogSize)
-        {
+        if (quests.Count < questLogSize) {
             quests.Add(q);
 			return true;
         }

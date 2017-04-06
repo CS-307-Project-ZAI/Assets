@@ -13,12 +13,12 @@ public class AttackCollider : MonoBehaviour {
 	void OnTriggerStay2D(Collider2D col) {
 		if (col.gameObject.tag == "Player") {
 			if (owner.attackTimer >= owner.attackRate) {
-				col.gameObject.SendMessage ("ApplyDamage", owner.damage);
+				col.gameObject.GetComponent<PersonController>().applyDamage (owner.damage, owner);
 				owner.attackTimer = 0.0f;
 			}
 		} else if (col.gameObject.tag == "Ally") {
 			if (owner.attackTimer >= owner.attackRate) {
-				col.gameObject.SendMessage ("ApplyDamage", owner.damage);
+				col.gameObject.GetComponent<PersonController>().applyDamage (owner.damage, owner);
 				owner.attackTimer = 0.0f;
 			}
 		} else if (col.gameObject.tag == "Wall") {

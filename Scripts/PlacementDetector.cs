@@ -4,40 +4,45 @@ using UnityEngine;
 
 public class PlacementDetector : MonoBehaviour {
 
-	bool check = false;
 	SpriteRenderer spr;
 	public Sprite green;
 	public Sprite red;
 	public LayerMask checkLayer;
 
 	public List<GameObject> collisions = new List<GameObject>();
+	List<GameObject> removal = new List<GameObject>();
+	public bool check = true;
 
 	void Start() {
 		spr = gameObject.GetComponent<SpriteRenderer> ();
 	}
 
-	void OnTriggerEnter2D(Collider2D col) {
-		if (col.gameObject.tag == "Wall" || col.gameObject.tag == "Block") {
-			Debug.Log ("Enter");
-			Debug.Log ("Count: " + collisions.Count);
-			if (!collisions.Contains (col.gameObject)) {
-				collisions.Add (col.gameObject);
-			}
+	void FixedUpdate() {
+		foreach (GameObject obj in removal) {
+			collisions.Remove (obj);
 		}
+		removal.Clear ();
+		checkCollision ();
 	}
 
-	void OnTriggerExit2D(Collider2D col) {
-		if (col.gameObject.tag == "Wall" || col.gameObject.tag == "Block") {
-			Debug.Log ("Exit");
-			Debug.Log ("Count: " + collisions.Count);
-			collisions.Remove (col.gameObject);
+	public void addCollision(GameObject obj) {
+		if (!collisions.Contains(obj)) {
+			collisions.Add(obj);
 		}
+		checkCollision ();
 	}
 
-	public bool checkCollision() {
+	public void removeCollision(GameObject obj) {
+		removal.Add (obj);
+	}
+		
+	public void checkCollision() {
 		if (collisions.Count <= 0) {
-			return false;
+			check = true; //True, we can place a wall here
+			spr.sprite = green;
+			return;
 		}
-		return true;
+		check = false; //False, cannot place a wall here
+		spr.sprite = red;
 	}
 }

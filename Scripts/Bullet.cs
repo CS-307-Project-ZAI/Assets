@@ -11,7 +11,7 @@ public class Bullet : MonoBehaviour {
 	public bool kill = false;
 
 	public PersonController owner;
-	public float damage = 10.0f;
+	public int damage = 10;
 
 	public bool passthrough = false;
 
@@ -37,7 +37,8 @@ public class Bullet : MonoBehaviour {
 
 	void OnTriggerEnter2D(Collider2D col) {
 		if (col.gameObject.tag == "Enemy") {
-			col.gameObject.SendMessage ("ApplyDamage", damage);
+			EnemyController e = col.gameObject.GetComponent<EnemyController> ();
+			e.applyDamage (damage, owner);
 			if (!passthrough) {
 				kill = true;
 			}

@@ -15,7 +15,7 @@ public class Attributes : MonoBehaviour
 	[Range(0, 10)]
 	public int hearing = 5;
 	[Range(0, 10)]
-	public int reactZone = 8; //agression or panic trigger zone
+	public int reactZone = 8; //aggression or panic trigger zone
 	[Range(-1, 1)]
 	public float blindspot = -0.1f; // -1 = 360 view, 1 = totally blind
 	[Range(0, 10)]
@@ -52,10 +52,10 @@ public class Attributes : MonoBehaviour
 	public TriggersAttributes inReact;
 	public Vector3 influenceOfNPCs = Vector3.zero;
 	public Vector3 movement = Vector3.zero;
+	protected bool start = false;
 
 	// Use this for initialization
-	void Start()
-	{
+	void Start() {
 		inSight = (TriggersAttributes)Instantiate(owner.gm.triggerAttribute);
 		inHearing = (TriggersAttributes)Instantiate(owner.gm.triggerAttribute);
 		inReact = (TriggersAttributes)Instantiate(owner.gm.triggerAttribute);
@@ -69,19 +69,22 @@ public class Attributes : MonoBehaviour
 		//setAttributes(owner.gm.difficulty);
 		this.transform.SetParent(owner.transform);
 		setAttributes(owner.gm.difficulty);
+		start = true;
 	}
 
 	// Update is called once per frame
-	void Update()
-	{
-		this.transform.position = owner.transform.position;
-		cleanProximity();
-		getInfluences(Time.deltaTime);
-		
+	public void GMUpdate() {
+		if (start) {
+			inSight.GMUpdate ();
+			inHearing.GMUpdate ();
+			inReact.GMUpdate ();
+			this.transform.position = owner.transform.position;
+			cleanProximity ();
+			getInfluences (Time.deltaTime);
+		}
 	}
 
-	protected void cleanProximity()
-	{
+	protected void cleanProximity() {
 		for (int i = 0; i < proximityAllies.Count; i++)
 			if (proximityAllies[i] == null)
 				proximityAllies.RemoveAt(i);
@@ -94,8 +97,7 @@ public class Attributes : MonoBehaviour
 	}
 
 	// Set attributes for ally NPCs
-	public void setAttributes(string difficulty)
-	{
+	public void setAttributes(string difficulty) {
 		//add setup function
 
 		inSight.setParent(this);
@@ -108,37 +110,32 @@ public class Attributes : MonoBehaviour
 
 	//call to remove an NPC from proximity list
 	//checks that the npc has been removed from all 3 senses triggers
-	public void RemoveProx(PersonController npc)
-	{
+	public void RemoveProx(PersonController npc) {
 		if (!inHearing.withinRange.Contains(npc) && !inSight.withinRange.Contains(npc) && !inReact.withinRange.Contains(npc))
 		{
 			proximityNPCs.Remove(npc);
 		}
 	}
 
-	public void RemoveEnemy(PersonController npc)
-	{
+	public void RemoveEnemy(PersonController npc) {
 		if (!inHearing.withinRange.Contains(npc) && !inSight.withinRange.Contains(npc) && !inReact.withinRange.Contains(npc))
 		{
 			proximityEnemies.Remove(npc);
 		}
 	}
 
-	public void RemoveAlly(PersonController npc)
-	{
+	public void RemoveAlly(PersonController npc) {
 		if (!inHearing.withinRange.Contains(npc) && !inSight.withinRange.Contains(npc) && !inReact.withinRange.Contains(npc))
 		{
 			proximityAllies.Remove(npc);
 		}
 	}
 
-	public void setOwner(PersonController p)
-	{
+	public void setOwner(PersonController p) {
 		owner = p;
 	}
 
-	public void getClosestFoe()
-	{
+	public void getClosestFoe() {
 		float shortestDistance = 1000000;
 		EnemyController closest = null;
 		for (int i = 0; i < proximityEnemies.Count; i++)
@@ -156,8 +153,7 @@ public class Attributes : MonoBehaviour
 		closestEnemy = closest;
 	}
 
-	protected Vector3 averageDirectionWeighted(List<PersonController> npcs)
-	{
+	protected Vector3 averageDirectionWeighted(List<PersonController> npcs) {
 		Vector3 avg = Vector3.zero;
 
 		foreach (PersonController npc in npcs)
@@ -169,8 +165,7 @@ public class Attributes : MonoBehaviour
 	}
 
 
-	protected void getInfluences(float DeltaT)
-	{
+	protected void getInfluences(float DeltaT) {
 		enemyInRange = proximityEnemies.Count != 0;
 
 		if (enemyInRange)

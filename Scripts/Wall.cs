@@ -59,12 +59,11 @@ public class Wall : MonoBehaviour {
 
 	private void OnTriggerEnter2D(Collider2D other)
 	{
-		if (other.gameObject.tag == "Player" || other.gameObject.tag == "Ally")
-		{
+		if (other.gameObject.tag == "Player" || other.gameObject.tag == "Ally") {
 			Debug.Log ("Person came within range!");
-			PersonController temp = other.transform.gameObject.GetComponent<PersonController>();
-			if (!withinRange.Contains(temp))
-				withinRange.Add(temp);
+			PersonController temp = other.transform.gameObject.GetComponent<PersonController> ();
+			if (!withinRange.Contains (temp))
+				withinRange.Add (temp);
 		}
 	}
 
@@ -75,6 +74,20 @@ public class Wall : MonoBehaviour {
 			Debug.Log ("Person went out of range!");
 			PersonController temp = collision.gameObject.GetComponent<PersonController>();
 			withinRange.Remove(temp);
+		}
+	}
+
+	private void OnCollisionEnter2D(Collision2D col) {
+		if (col.gameObject.tag == "Detector") {
+			Debug.Log ("Enter!");
+			gm.ui.pd.addCollision (this.gameObject);
+		}
+	}
+
+	private void OnCollisionExit2D(Collision2D col) {
+		if (col.gameObject.tag == "Detector") {
+			Debug.Log ("Exit!");
+			gm.ui.pd.removeCollision (this.gameObject);
 		}
 	}
 }

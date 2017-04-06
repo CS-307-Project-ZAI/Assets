@@ -82,7 +82,7 @@ public class PlayerController : PersonController {
 
 			}
 			if (Input.GetMouseButtonDown (1)) { //Player right-clicks in Combat mode
-				GameObject obj = gm.getClickedObject ();
+				GameObject obj = gm.getClickedObject (2);
 				if (obj != null) {
 					if (obj.tag == "Enemy") {
 						//Target enemy
@@ -97,7 +97,7 @@ public class PlayerController : PersonController {
 					Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
 					gm.selectedAlly.addWaypoint (mousePos);
 				} else {
-					GameObject obj = gm.getClickedObject ();
+					GameObject obj = gm.getClickedObject (0);
 					if (obj != null) {
 						if (obj.tag == "Ally") {
 							gm.selectedAlly = obj.GetComponent<AllyController> ();
@@ -112,7 +112,7 @@ public class PlayerController : PersonController {
 				if (gm.selectedAlly != null) {
 					if (gm.setWaypoints) {
 						Debug.Log ("Removing waypoint");
-						GameObject obj = gm.getClickedObject ();
+						GameObject obj = gm.getClickedObject (0);
 						if (obj != null) {
 							if (obj.tag == "Waypoint") {
 								gm.selectedAlly.movePoints.Remove (obj.transform.position);
@@ -166,19 +166,19 @@ public class PlayerController : PersonController {
 			switch (wall.wallTier) {
 				case "Tier1Wall":
 					if (playerItems ["cloth"] < 5) {
-						Debug.Log ("Not enough cloth!");
+						//Debug.Log ("Not enough cloth!");
 						enoughMaterials = false;
 					}
 					break;
 				case "Tier2Wall":
 					if (playerItems ["wood"] < 5) {
-						Debug.Log ("Not enough wood!");
+						//Debug.Log ("Not enough wood!");
 						enoughMaterials = false;
 					}
 					break;
 				case "Tier3Wall":
 					if (playerItems ["metal"] < 5) {
-						Debug.Log ("Not enough metal");
+						//Debug.Log ("Not enough metal");
 						enoughMaterials = false;
 					}
 					break;
@@ -187,7 +187,7 @@ public class PlayerController : PersonController {
 				break;
 			}
 
-			if (gm.build && Input.GetMouseButtonDown (0) && enoughMaterials) {
+			if (gm.build && Input.GetMouseButtonDown (0) && enoughMaterials && gm.ui.pd.check) {
 				Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
 				Wall newWall = (Wall)Instantiate (
 					               wall, new Vector3 (mousePos.x, mousePos.y, 0), 
@@ -218,7 +218,7 @@ public class PlayerController : PersonController {
 			}
 
 			if (gm.buildDestroy && Input.GetMouseButtonDown (0)) {
-				GameObject obj = gm.getClickedObject ();
+				GameObject obj = gm.getClickedObject (1);
 				if (obj != null) {
 					if (obj.tag == "Wall") {
 						gm.walls.Remove((Wall) obj.GetComponent<Wall>());

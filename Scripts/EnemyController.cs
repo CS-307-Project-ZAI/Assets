@@ -8,12 +8,17 @@ public class EnemyController : PersonController {
     public float attackRate = 1.0f;
 	public int damage = 2;
 
+    public int spawnID;
+    string enemyType;
+
+
 	public AttackCollider ac;
 
 	public AttributesZ stats;
 
 	// Use this for initialization
-	new void Start () {
+	void Start () {
+        enemyType = EnemyType.getType(spawnID);
 		attackTimer = 0.0f;
 		//gm = FindObjectOfType<GameManager> ();
 		//PathRequestManager.RequestPath(this, transform.position, target.transform.position, OnPathFound);
@@ -33,7 +38,16 @@ public class EnemyController : PersonController {
 	
 	// Update is called once per frame
 	public void GMUpdate () {
+		if (kill) {
+			return;
+		}
         attackTimer += Time.deltaTime;
+		if (stats == null) {
+			stats = (AttributesZ)Instantiate(gm.AttributeZ);
+			stats.setOwner(this);
+			stats.mode = "Idle";
+		}
+		stats.GMUpdate ();
 		getMovement ();
 		getRotation ();
 		if (targetTag != null) {
@@ -90,4 +104,18 @@ public class EnemyController : PersonController {
 		}
 		transform.Rotate (new Vector3 (0, 0, this.rotationFix));
 	}
+}
+
+public static class EnemyType {
+    //add new types here
+    private static string[] types = {"zombie"};
+
+    public static string getType(int id) {
+        if (id >= 0 && id < types.Length) return types[id];
+        return "unknown";
+    }
+
+    public static int getTypeSize() {
+        return types.Length;
+    }
 }
