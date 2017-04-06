@@ -21,6 +21,7 @@ public class GameManager : MonoBehaviour {
 	public TriggersAttributes triggerAttribute;
 	public Attributes Attribute;
 	public AttributesZ AttributeZ;
+	public LayerMask enemyMask;
 
 	[HideInInspector]
 	public List<PersonController> personKill;
@@ -153,7 +154,7 @@ public class GameManager : MonoBehaviour {
 			if (p.kill) {
 				pylonKill.Add (p);
 			}
-		}
+		}  
 
 		//Destroy each object in the kill list and clear it
 		foreach (PersonController p in personKill) {
@@ -223,6 +224,8 @@ public class GameManager : MonoBehaviour {
 		RaycastHit2D hit;
 		if (option == 1) {
 			hit = Physics2D.Raycast (rayPos, Vector2.zero, 0f, pf.grid.unwalkableMask);
+		} else if (option == 2) {
+			hit = Physics2D.Raycast (rayPos, Vector2.zero, 0f, enemyMask); 
 		} else {
 			hit = Physics2D.Raycast (rayPos, Vector2.zero, 0f);
 		}
@@ -300,6 +303,7 @@ public class GameManager : MonoBehaviour {
 		}
 		this.build = !this.build;
 		this.buildDestroy = false;
+		ui.pd.collisions.Clear ();
 		cam.SetCustomCursor ();
 	}
 
