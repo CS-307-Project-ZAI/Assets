@@ -6,7 +6,7 @@ public class EnemyController : PersonController {
 
 	public PersonController target;
     public float attackRate = 1.0f;
-	//public int damage = 2;
+	public int damage = 2;
 
 	public AttackCollider ac;
 
