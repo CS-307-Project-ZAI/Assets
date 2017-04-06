@@ -60,6 +60,9 @@ public class EnemySpawner{
 		do {
 			spawnPos = getRandomSpawn ();
 		} while (!isValidSpawn (spawnPos));
-        gm.spawnEnemyAtLocation(spawnPos);
+        if (gm.currentCycle == GameManager.DayNightCycle.NIGHT) {
+            gm.spawnEnemyAtLocation(spawnPos, (int)Random.Range(0f,(float)EnemyType.getTypeSize()));
+        }
+            gm.spawnEnemyAtLocation(spawnPos,0);
     }
 }

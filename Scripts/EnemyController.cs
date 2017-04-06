@@ -7,6 +7,8 @@ public class EnemyController : PersonController {
 	public PersonController target;
     public float attackRate = 1.0f;
 	public int damage = 2;
+    public int spawnID;
+    string enemyType;
 
 	public AttackCollider ac;
 
@@ -14,6 +16,7 @@ public class EnemyController : PersonController {
 
 	// Use this for initialization
 	void Start () {
+        enemyType = EnemyType.getType(spawnID);
 		attackTimer = 0.0f;
 		//gm = FindObjectOfType<GameManager> ();
 		//PathRequestManager.RequestPath(this, transform.position, target.transform.position, OnPathFound);
@@ -99,4 +102,18 @@ public class EnemyController : PersonController {
 		}
 		transform.Rotate (new Vector3 (0, 0, this.rotationFix));
 	}
+}
+
+public static class EnemyType {
+    //add new types here
+    private static string[] types = {"zombie"};
+
+    public static string getType(int id) {
+        if (id >= 0 && id < types.Length) return types[id];
+        return "unknown";
+    }
+
+    public static int getTypeSize() {
+        return types.Length;
+    }
 }

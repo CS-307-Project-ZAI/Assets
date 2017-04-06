@@ -20,7 +20,7 @@ public class SpawnPylon : MonoBehaviour {
 		{
 			for (int i = 0; i < spawnAmount; i++)
 			{
-				gm.spawnEnemyAtLocation(this.transform.position);
+				gm.spawnEnemyAtLocation(this.transform.position, 0);
 			}
 			spawnTimer = 0.0f;
 		}

@@ -16,6 +16,7 @@ public class PathFinding : MonoBehaviour {
    
     public void StartFindPath(Vector3 startPos, Vector3 targetPos) {
         StartCoroutine(FindPath(startPos, targetPos));
+        
     }
 
     IEnumerator FindPath(Vector3 startPos, Vector3 targetPos) {
@@ -37,7 +38,7 @@ public class PathFinding : MonoBehaviour {
 				pathSuccess = true;
 				shortcut = true;
 			} else {
-				UnityEngine.Debug.Log ("No straightline...performing A-star");
+			//	UnityEngine.Debug.Log ("No straightline...performing A-star");
 				Heap<Node> openSet = new Heap<Node> (grid.MaxSize);
 				HashSet<Node> closedSet = new HashSet<Node> ();
 				openSet.Add (startNode);
