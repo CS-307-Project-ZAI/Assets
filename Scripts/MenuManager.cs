@@ -174,6 +174,7 @@ public class MenuManager : GameManager {
 
 	public void loadSave(string file) {
 		Debug.Log ("Load: " + file);
+		SceneManager.LoadSceneAsync ("Scenes/GameScene");
 	}
 
 	public void setDifficultyEasy() {

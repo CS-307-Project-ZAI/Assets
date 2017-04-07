@@ -11,11 +11,13 @@ public class PlayerController : PersonController {
     public QuestLog questLog;
 	public bool enoughMaterials = false;
 	public bool checkMaterials = true;
-	public Dictionary<string, int> playerInventory;
+	public Dictionary<string, int> playerInventory = null;
 
     new void Start() {
 		base.Start ();
-		playerInventory = itemDic;
+		if (playerInventory == null) {
+			playerInventory = itemDic;
+		}
 		questLog = GetComponent<QuestLog>();
 		questLog.questLogOwner = this;
 	}
