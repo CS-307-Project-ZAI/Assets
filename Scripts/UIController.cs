@@ -184,7 +184,7 @@ public class UIController : MonoBehaviour {
 
 		modeText.text = activeGUI;
 
-		inventory = gm.player.playerItems;
+		inventory = gm.player.playerInventory;
 		//Counts items in playerItems and displays them
 		clothCount.text = inventory ["cloth"].ToString ();
 		woodCount.text = inventory ["wood"].ToString ();

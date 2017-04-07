@@ -1,9 +1,10 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class PlacementDetector : MonoBehaviour {
 
+    public GameManager gm;
 	SpriteRenderer spr;
 	public Sprite green;
 	public Sprite red;
@@ -45,4 +46,15 @@ public class PlacementDetector : MonoBehaviour {
 		check = false; //False, cannot place a wall here
 		spr.sprite = red;
 	}
+    
+    public void checkMaterials(){
+        if(gm.player.enoughMaterials){
+            check = true;
+            spr.sprite = green;
+        } else {
+            check = false;
+            spr.sprite = red;
+        }
+    }
+    
 }
