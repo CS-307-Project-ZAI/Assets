@@ -35,7 +35,7 @@ public class AttributesZ : Attributes
 		//herding.setParent(this);
 
 		this.transform.SetParent(owner.transform);
-		setAttributes(owner.gm.difficulty);
+		setAttributes(ApplicationModel.difficulty);
 		start = true;
 	}
 

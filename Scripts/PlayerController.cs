@@ -9,7 +9,8 @@ public class PlayerController : PersonController {
 	public bool wallRotation = false;
 	public int buildRate = 1;
     public QuestLog questLog;
-
+	public bool enoughMaterials = false;
+	public bool checkMaterials = true;
 
     new void Start() {
 		base.Start ();
@@ -160,34 +161,33 @@ public class PlayerController : PersonController {
 			if (Input.GetKeyDown (KeyCode.Q)) {
 				gm.toggleBuildDestroy ();
 			}
-			//Debug.Log ("wall.wallTier: " + wall.wallTier);
-			bool enoughMaterials = true;
 
-			switch (wall.wallTier) {
+			if (checkMaterials) {
+				enoughMaterials = false;
+				switch (wall.wallTier) {
 				case "Tier1Wall":
-					if (playerItems ["cloth"] < 5) {
+					if (playerItems ["cloth"] >= 5) {
 						//Debug.Log ("Not enough cloth!");
-						enoughMaterials = false;
+						enoughMaterials = true;
 					}
 					break;
 				case "Tier2Wall":
-					if (playerItems ["wood"] < 5) {
+					if (playerItems ["wood"] >= 5) {
 						//Debug.Log ("Not enough wood!");
-						enoughMaterials = false;
+						enoughMaterials = true;
 					}
 					break;
 				case "Tier3Wall":
-					if (playerItems ["metal"] < 5) {
+					if (playerItems ["metal"] >= 5) {
 						//Debug.Log ("Not enough metal");
-						enoughMaterials = false;
+						enoughMaterials = true;
 					}
 					break;
-			default:
-				enoughMaterials = true;
-				break;
+				}
+				checkMaterials = false;
 			}
 
-			if (gm.build && Input.GetMouseButtonDown (0) && enoughMaterials && gm.ui.pd.check) {
+			if (gm.build && Input.GetMouseButtonDown (0) && gm.ui.pd.checkPlacement()) {
 				Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
 				Wall newWall = (Wall)Instantiate (
 					               wall, new Vector3 (mousePos.x, mousePos.y, 0), 
@@ -215,6 +215,7 @@ public class PlayerController : PersonController {
 				default:
 					break;
 				}
+				checkMaterials = true;
 			}
 
 			if (gm.buildDestroy && Input.GetMouseButtonDown (0)) {
@@ -292,6 +293,10 @@ public class PlayerController : PersonController {
 		if (health <= 0) {
 			print ("Game Over!");
 		}
+	}
+		
+	public void addItem(string key, int num) {
+		checkMaterials = true;
 	}
 }
 

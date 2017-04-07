@@ -68,7 +68,7 @@ public class Attributes : MonoBehaviour
 
 		//setAttributes(owner.gm.difficulty);
 		this.transform.SetParent(owner.transform);
-		setAttributes(owner.gm.difficulty);
+		setAttributes(ApplicationModel.difficulty);
 		start = true;
 	}
 

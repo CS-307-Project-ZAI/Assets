@@ -16,6 +16,17 @@ public class TriggersAttributes : MonoBehaviour
 		zone = this.gameObject.GetComponent<CircleCollider2D>();
 	}
 
+	// Update is called once per frame
+	public void GMUpdate()
+	{
+		this.transform.position = parentAttr.transform.position;
+		for (int i = 0; i < withinRange.Count; i++) {
+			if (withinRange [i] == null) {
+				withinRange.RemoveAt (i);
+			}
+		}
+	}
+
 	//private void OnTriggerEnter2D(Collider2D other)
 	//{
 	//	if (other.gameObject.tag == "Player" || other.gameObject.tag == "Ally" || other.gameObject.tag == "Enemy")
@@ -75,15 +86,6 @@ public class TriggersAttributes : MonoBehaviour
 			parentAttr.RemoveEnemy(temp);
 			return;
 		}
-	}
-
-	// Update is called once per frame
-	public void GMUpdate()
-	{
-		this.transform.position = parentAttr.transform.position;
-		for (int i = 0; i < withinRange.Count; i++)
-			if (withinRange[i] == null)
-				withinRange.RemoveAt(i);
 	}
 
 	public void setRadius(float radius)
