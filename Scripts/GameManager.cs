@@ -252,7 +252,7 @@ public class GameManager : MonoBehaviour {
     
 	public void spawnEnemyAtLocation(Vector3 spawnLocation, int spawnID) {
 		EnemyController e = (EnemyController) Instantiate (enemy);
-		e.target = player;
+		//e.target = player;
 		e.transform.position = spawnLocation;
         e.gm = this;
         e.spawnID = spawnID;

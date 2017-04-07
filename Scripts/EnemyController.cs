@@ -42,11 +42,11 @@ public class EnemyController : PersonController {
 			return;
 		}
         attackTimer += Time.deltaTime;
-		if (stats == null) {
-			stats = (AttributesZ)Instantiate(gm.AttributeZ);
-			stats.setOwner(this);
-			stats.mode = "Idle";
-		}
+		//if (stats == null) {
+		//	stats = (AttributesZ)Instantiate(gm.AttributeZ);
+		//	stats.setOwner(this);
+		//	stats.mode = "Idle";
+		//}
 		stats.GMUpdate ();
 		getMovement ();
 		getRotation ();
@@ -59,6 +59,7 @@ public class EnemyController : PersonController {
 	void getMovement() {
 		if (stats.mode == "Offensive")
 		{
+			target = stats.proximityAllies[0];
 			pathFindTimer += (pathFindTimer >= pathRefreshTime ? 0.0f : Time.deltaTime);
 			/**
 			if (euclideanDistance(transform.position, target.transform.position) > 5.0f) {
@@ -81,26 +82,41 @@ public class EnemyController : PersonController {
 		{
 			if(stats.mode == "Herding")
 			{
-				Vector3 direction = Vector3.ClampMagnitude((stats.influenceOfNPCs + stats.movement) * 250, 0.2f * stats.speed) * Time.deltaTime;
+				Vector3 direction = Vector3.ClampMagnitude((stats.influenceOfNPCs + stats.movement) * 250, 0.2f * stats.speed * Time.deltaTime);
 				transform.position += direction;
+				stats.movement = direction;
+				//this.transform.forward = direction;
 				return;
 			}
 			if(stats.mode == "Idle")
 			{
 				Vector3 direction = Vector3.ClampMagnitude(stats.movement * 500, 0.2f * stats.speed) * Time.deltaTime;
 				transform.position += direction;
+				stats.movement = direction;
 				return;
 			}
 		}
 	}
 
 	void getRotation() {
-		if (path == null) {
-			transform.rotation = Quaternion.LookRotation (Vector3.forward, target.transform.position - transform.position);
-		} else if (path.Length > 0) {
-			transform.rotation = Quaternion.LookRotation (Vector3.forward, path[targetIndex] - transform.position);
-		} else {
-			transform.rotation = Quaternion.LookRotation (Vector3.forward, target.transform.position - transform.position);
+		if (target == null)
+		{
+			transform.rotation = Quaternion.LookRotation(Vector3.forward, stats.movement);
+		}
+		else
+		{
+			if (path == null)
+			{
+				transform.rotation = Quaternion.LookRotation(Vector3.forward, target.transform.position - transform.position);
+			}
+			else if (path.Length > 0)
+			{
+				transform.rotation = Quaternion.LookRotation(Vector3.forward, path[targetIndex] - transform.position);
+			}
+			else
+			{
+				transform.rotation = Quaternion.LookRotation(Vector3.forward, target.transform.position - transform.position);
+			}
 		}
 		transform.Rotate (new Vector3 (0, 0, this.rotationFix));
 	}
