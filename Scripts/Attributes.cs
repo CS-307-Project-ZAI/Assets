@@ -51,7 +51,7 @@ public class Attributes : MonoBehaviour
 	public TriggersAttributes inHearing;
 	public TriggersAttributes inReact;
 	public Vector3 influenceOfNPCs = Vector3.zero;
-	public Vector3 movement = Vector3.zero;
+	public Vector3 movement = new Vector3(1.0f, 0.0f);
 	protected bool start = false;
 
 	// Use this for initialization
@@ -94,6 +94,16 @@ public class Attributes : MonoBehaviour
 		for (int i = 0; i < proximityEnemies.Count; i++)
 			if (proximityEnemies[i] == null)
 				proximityEnemies.RemoveAt(i);
+
+		//for (int i = proximityAllies.Count - 1; i > 0 ; i--)
+		//	if (proximityAllies[i] == null)
+		//		proximityAllies.RemoveAt(i);
+		//for (int i = proximityNPCs.Count - 1; i > 0 ; i--)
+		//	if (proximityNPCs[i] == null)
+		//		proximityNPCs.RemoveAt(i);
+		//for (int i = proximityEnemies.Count - 1; i > 0; i--)
+		//	if (proximityEnemies[i] == null)
+		//		proximityEnemies.RemoveAt(i);
 	}
 
 	// Set attributes for ally NPCs
@@ -173,7 +183,7 @@ public class Attributes : MonoBehaviour
 			if (inReact.withinRange.Count != 0)
 			{
 				Panicked = true;
-				PanickTimer = 5.0f;
+				PanickTimer = 2.0f;
 			}
 
 			getClosestFoe();

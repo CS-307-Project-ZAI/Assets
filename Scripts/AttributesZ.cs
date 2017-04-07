@@ -40,19 +40,14 @@ public class AttributesZ : Attributes
 	}
 
 	// Update is called once per frame
-	public void GMUpdate()
+	new public void GMUpdate()
 	{
 		if (start) {
 			inSight.GMUpdate ();
 			inHearing.GMUpdate ();
 			inReact.GMUpdate ();
 			this.transform.position = owner.transform.position;
-			for (int i = 0; i < proximityNPCs.Count; i++) {
-				if (proximityNPCs [i] == null)
-					proximityNPCs.RemoveAt (i);
-				if (proximityNPCs [i].gameObject.tag == "Player" || proximityNPCs [i].gameObject.tag == "Ally")
-					enemyInRange = true;
-			}
+			cleanProximity();
 			getInfluences (Time.deltaTime);
 		}
 	}
@@ -77,17 +72,18 @@ public class AttributesZ : Attributes
 
 		if (AllyInRange)
 		{
+			influenceOfNPCs = Vector3.zero;
 			getClosestFoe();
 			mode = "Offensive";
-			getInfluencesAlly();
+			//getInfluencesAlly();
 		}
 		else
 		{
 			if (enemyInRange)
 			{
 				mode = "Herding";
-				movement += influenceOfNPCs;
-				movement /= 2;
+				//movement += influenceOfNPCs;
+				//movement /= 2;
 				getInfluenceEnemies();
 			}
 			else
@@ -117,11 +113,11 @@ public class AttributesZ : Attributes
 		closestAlly = closest;
 	}
 
-	public void getInfluencesAlly()
-	{
-		Vector3 avgDirection = averageDirectionWeighted(proximityAllies);
-		influenceOfNPCs = -avgDirection;
-	}
+	//public void getInfluencesAlly()
+	//{
+	//	Vector3 avgDirection = averageDirectionWeighted(proximityAllies);
+	//	influenceOfNPCs = -avgDirection;
+	//}
 
 	public void getInfluenceEnemies()
 	{
@@ -130,72 +126,42 @@ public class AttributesZ : Attributes
 		Vector3 orientation = Vector3.zero;
 		Vector3 attraction = Vector3.zero;
 
-		float BR = boidsR * boidsR;
-		float BO = boidsO * boidsO;
-		float BA = boidsA * boidsA;
-		//foreach (PersonController e in proximityEnemies)
-		//{
-		//	Vector3 vect = e.transform.position - this.transform.position;
-		//	float d = vect.sqrMagnitude;
-		//	print(d);
-		//	if (d < BR)
-		//		repulsion -= vect / d;
-		//	else
-		//	{
-		//		if (d < BO)
-		//			orientation += e.transform.forward / d;
-		//		else
-		//		{
-		//			attraction += vect / d;
-		//		}
-		//	}
-		//}
-
-		Vector3 vect;
+		float BR = 0.35f;//boidsR ;
+		float BO = 3;//boidsO ;
+		float BA = 8;//boidsA ;
 		float d;
-		foreach (PersonController e in inReact.withinRange)
+
+
+		foreach (PersonController e in proximityEnemies)
 		{
-			vect = e.transform.position - this.transform.position;
+			Vector3 vect = e.transform.position - this.transform.position;
 			d = vect.magnitude;
-			repulsion -= vect / d;
+			//print(d);
+			if (d < BR)
+				repulsion -= vect / d;
+			else
+			{
+				if (d < BO)
+					orientation += e.transform.forward / d;
+				else
+				{
+					if(d < BA)
+						attraction += vect / d;
+				}
+			}
 		}
-		repulsion.Normalize();
 
-		foreach (PersonController e in inHearing.withinRange)
-		{
-			vect = e.transform.position - this.transform.position;
-			d = vect.magnitude;
-			orientation += e.transform.forward / d;
-		}
-		orientation.Normalize();
+		if(repulsion != Vector3.zero)
+			repulsion.Normalize();
+		if(orientation != Vector3.zero)
+			orientation.Normalize();
+		if(attraction != Vector3.zero)
+			attraction.Normalize();
 
-		foreach (PersonController e in inReact.withinRange)
-		{
-			vect = e.transform.position - this.transform.position;
-			d = vect.magnitude;
-			attraction += vect / d;
-		}
-		attraction.Normalize();
-
-
-		//Vector3 repulsion = -averageDirectionWeighted(inReact.withinRange) * 2.0f;
-
-		//Vector3 orientation = Vector3.zero;
-		//foreach(EnemyController e in inHearing.withinRange)
-		//{
-		//	orientation += e.transform.forward;
-		//}
-		//orientation.Normalize();
-		//orientation = orientation * 1.5f;
-
-		//Vector3 attraction = averageDirectionWeighted(inSight.withinRange) * 1.0f;
-
-		repulsion.Normalize();
-		orientation.Normalize();
-		attraction.Normalize();
-
-		sum = repulsion * 3 + orientation * 2 + attraction;
+		sum = repulsion * 4 + orientation * 3 + attraction;
+		sum.z = 0;
 		sum.Normalize();
-		influenceOfNPCs = sum; 
+		influenceOfNPCs = sum;
+		//influenceOfNPCs.z = 0;
 	}
 }
