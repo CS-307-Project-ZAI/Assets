@@ -11,10 +11,11 @@ public class PlayerController : PersonController {
     public QuestLog questLog;
 	public bool enoughMaterials = false;
 	public bool checkMaterials = true;
+	public Dictionary<string, int> playerInventory;
 
     new void Start() {
 		base.Start ();
-
+		playerInventory = itemDic;
 		questLog = GetComponent<QuestLog>();
 		questLog.questLogOwner = this;
 	}
@@ -141,13 +142,13 @@ public class PlayerController : PersonController {
 			//Add materials to inventory
 
 			if (Input.GetKeyDown (KeyCode.I)) {
-				playerItems ["cloth"]++;
+				playerInventory ["cloth"]++;
 			}
 			if (Input.GetKeyDown (KeyCode.O)) {
-				playerItems ["wood"]++;
+				playerInventory ["wood"]++;
 			}
 			if (Input.GetKeyDown (KeyCode.P)) {
-				playerItems ["metal"]++;
+				playerInventory ["metal"]++;
 			}
 
 			string loadWall = "Walls/" + wall.wallTier;
@@ -166,26 +167,24 @@ public class PlayerController : PersonController {
 				enoughMaterials = false;
 				switch (wall.wallTier) {
 				case "Tier1Wall":
-					if (playerItems ["cloth"] >= 5) {
-						//Debug.Log ("Not enough cloth!");
+					if (playerInventory ["cloth"] >= 5) {
 						enoughMaterials = true;
 					}
 					break;
 				case "Tier2Wall":
-					if (playerItems ["wood"] >= 5) {
-						//Debug.Log ("Not enough wood!");
+					if (playerInventory ["wood"] >= 5) {
 						enoughMaterials = true;
 					}
 					break;
 				case "Tier3Wall":
-					if (playerItems ["metal"] >= 5) {
-						//Debug.Log ("Not enough metal");
+					if (playerInventory ["metal"] >= 5) {
 						enoughMaterials = true;
 					}
 					break;
 				}
 				checkMaterials = false;
 			}
+				
 
 			if (gm.build && Input.GetMouseButtonDown (0) && gm.ui.pd.checkPlacement()) {
 				Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
@@ -204,13 +203,13 @@ public class PlayerController : PersonController {
 
 				switch (wall.wallTier) {
 				case "Tier1Wall":
-					playerItems ["cloth"] -= 5;
+					playerInventory ["cloth"] -= 5;
 					break;
 				case "Tier2Wall":
-					playerItems ["wood"] -= 5;
+					playerInventory ["wood"] -= 5;
 					break;
 				case "Tier3Wall":
-					playerItems ["metal"] -= 5;
+					playerInventory ["metal"] -= 5;
 					break;
 				default:
 					break;
@@ -222,6 +221,7 @@ public class PlayerController : PersonController {
 				GameObject obj = gm.getClickedObject (1);
 				if (obj != null) {
 					if (obj.tag == "Wall") {
+						
 						gm.walls.Remove((Wall) obj.GetComponent<Wall>());
 						Destroy (obj);
 						gm.recreateGrid ();

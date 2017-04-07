@@ -256,7 +256,6 @@ public class GameManager : MonoBehaviour {
     
 	public void spawnEnemyAtLocation(Vector3 spawnLocation, int spawnID) {
 		EnemyController e = (EnemyController) Instantiate (enemy);
-		e.target = player;
 		e.transform.position = spawnLocation;
         e.gm = this;
         e.spawnID = spawnID;
@@ -264,7 +263,7 @@ public class GameManager : MonoBehaviour {
 	}
     
     public void spawnEnemy() {
-        spawnEnemyAtLocation(Vector3.zero, 0);
+		spawnEnemyAtLocation(Vector3.zero, 0);
     }
 
 	public void createSpawnPylon(Vector3 pos) {
