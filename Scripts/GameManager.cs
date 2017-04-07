@@ -49,6 +49,7 @@ public class GameManager : MonoBehaviour {
 	private string[] modes = {"Combat", "Command", "Build"};
     private EnemySpawner spawner;
 
+	private bool ready = false;
 	// Use this for initialization
 	void Start () {
 		ui = FindObjectOfType<UIController> ();
@@ -56,16 +57,21 @@ public class GameManager : MonoBehaviour {
         spawner = new EnemySpawner(this);
 
 		if (!loadGameState()) {
+			Debug.Log ("Load failed...Starting new game!");
 			spawnPlayer ();
 			spawnAlly ();
 		}
 
 		cam.target = player;
 		ui.GMStart ();
+		ready = true;
 	}
 
 	// Update is called once per frame
 	void Update () {
+		if (!ready) {
+			return;
+		}
 		if (paused) {
 			if (Input.GetKeyDown (KeyCode.Escape)) {
 				paused = !paused;
@@ -244,6 +250,14 @@ public class GameManager : MonoBehaviour {
 		player = (PlayerController)Instantiate (player);
 		player.gm = this;
 		player.personName = "Player";
+
+		//Give person starting weapon
+		Weapon w = (Weapon)Instantiate (startingWeapon);
+		w.owner = player;
+		string load = "AmmoTypes/" + w.ammoType;
+		w.bullet = Resources.Load (load, typeof(Bullet)) as Bullet;
+		player.weapons.Add (w);
+		w.transform.parent = player.gameObject.transform;
 	}
 
 	void spawnAlly() {
@@ -252,6 +266,14 @@ public class GameManager : MonoBehaviour {
 		a.gm = this;
 		a.personName = "Billy";
 		a.transform.position = new Vector3 (2, 0, 0);
+
+		//Give person starting weapon
+		Weapon w = (Weapon)Instantiate (startingWeapon);
+		w.owner = a;
+		string load = "AmmoTypes/" + w.ammoType;
+		w.bullet = Resources.Load (load, typeof(Bullet)) as Bullet;
+		a.weapons.Add (w);
+		w.transform.parent = a.gameObject.transform;
 	}
     
 	public void spawnEnemyAtLocation(Vector3 spawnLocation, int spawnID) {
@@ -357,7 +379,8 @@ public class GameManager : MonoBehaviour {
 		StreamWriter writer = new StreamWriter (ApplicationModel.savePath + "savefile" + ApplicationModel.savefile + ".txt");
 
 		//Player Position and health
-		writer.WriteLine((string)(player.transform.position.x + "," + player.transform.position.y + "," + player.health));
+		writer.WriteLine((string)(player.transform.position.x + "," + player.transform.position.y + "," + player.health + "," + 
+			player.playerInventory["cloth"] + "," + player.playerInventory["wood"] + "," + player.playerInventory["metal"]));
 
 		//Player's Weapons
 		writer.WriteLine(player.weapons.Count.ToString());
@@ -374,7 +397,11 @@ public class GameManager : MonoBehaviour {
 		//Enemy targets, positions, and health
 		writer.WriteLine(enemies.Count.ToString());
 		foreach (EnemyController e in enemies) {
-			writer.WriteLine((string)(e.target.personName + "," + e.transform.position.x + "," + e.transform.position.y + "," + e.health));
+			if (e.target == null) {
+				writer.WriteLine ((string)("," + e.transform.position.x + "," + e.transform.position.y + "," + e.health));
+			} else {
+				writer.WriteLine ((string)(e.target.personName + "," + e.transform.position.x + "," + e.transform.position.y + "," + e.health));
+			}
 		}
 
 		//Wall positions and rotations
@@ -396,9 +423,146 @@ public class GameManager : MonoBehaviour {
 
 		StreamReader reader = new StreamReader (ApplicationModel.savePath + "savefile" + ApplicationModel.savefile + ".txt", Encoding.Default);
 
+		string line;
 		using (reader) {
+			//Load Player
+			string[] playerInfo = reader.ReadLine ().Split(',');
+			if (!loadPlayer (playerInfo)) {
+				return false;
+			}
 
+			//Load Player Weapons
+			int numWeapons = int.Parse (reader.ReadLine());
+			string[] weaponInfo;
+			for (int i = 0; i < numWeapons; i++) {
+				weaponInfo = reader.ReadLine ().Split (',');
+				if (!loadWeapon (weaponInfo)) {
+					return false;
+				}
+			}
+
+			//Load Allies
+			int numAllies = int.Parse (reader.ReadLine());
+			string[] allyInfo;
+			for (int i = 0; i < numAllies; i++) {
+				allyInfo = reader.ReadLine ().Split (',');
+				if (!loadAlly(allyInfo)) {
+					return false;
+				}
+			}
+
+			//Load Enemies
+			int numEnemies = int.Parse (reader.ReadLine());
+			string[] enemyInfo;
+			for (int i = 0; i < numEnemies; i++) {
+				enemyInfo = reader.ReadLine ().Split (',');
+				if (!loadEnemy (enemyInfo)) {
+					return false;
+				}
+			}
+
+			//Load Walls
+			int numWalls = int.Parse (reader.ReadLine());
+			string[] wallInfo;
+			for (int i = 0; i < numWalls; i++) {
+				wallInfo = reader.ReadLine ().Split (',');
+				if (!loadWall (wallInfo)) {
+					return false;
+				}
+			}
+
+			reader.Close ();
 		}
+		return true;
+	}
+
+	public bool loadPlayer(string[] info) {
+		if (info.Length < 6) {
+			return false;
+		}
+		player = (PlayerController)Instantiate (player);
+		player.gm = this;
+		player.personName = "Player";
+		player.transform.position = new Vector3 (float.Parse(info[0]), float.Parse(info[1]), 0);
+		player.health = int.Parse(info [2]);
+		player.playerInventory = new Dictionary<string, int>();
+		player.playerInventory.Add ("cloth", 0);
+		player.playerInventory.Add ("wood", 0);
+		player.playerInventory.Add ("metal", 0);
+		player.playerInventory ["cloth"] = int.Parse (info [3]);
+		player.playerInventory["wood"] = int.Parse (info [4]);
+		player.playerInventory["metal"] = int.Parse (info [5]);
+		return true;
+	}
+
+	public bool loadWeapon(string[] info) {
+		if (info.Length < 3) {
+			return false;
+		}
+		//Debug.Log ("Weapons/" + info [0]);
+		//string load = "Weapons/" + info [0];
+		//Weapon w = Resources.Load ("Weapons/" + info [0]) as Weapon;
+		Weapon w = (Weapon)Instantiate (startingWeapon);
+		w.owner = player;
+		string load = "AmmoTypes/" + w.ammoType;
+		w.bullet = Resources.Load (load, typeof(Bullet)) as Bullet;
+		player.weapons.Add (w);
+		w.transform.parent = player.gameObject.transform;
+		w.currentLoaded = int.Parse (info [1]);
+		w.ammoPool = int.Parse (info [2]);
+		return true;
+	}
+
+	public bool loadAlly(string[] info) {
+		if (info.Length < 4) {
+			return false;
+		}
+
+		AllyController a = (AllyController)Instantiate (ally);
+		people.Add (a);
+		a.gm = this;
+		a.personName = info[0];
+		a.transform.position = new Vector3 (float.Parse(info[1]), float.Parse(info[2]), 0);
+		a.health = int.Parse (info [3]);
+
+		//Give person starting weapon
+		Weapon w = (Weapon)Instantiate (startingWeapon);
+		w.owner = a;
+		string load = "AmmoTypes/" + w.ammoType;
+		w.bullet = Resources.Load (load, typeof(Bullet)) as Bullet;
+		a.weapons.Add (w);
+		w.transform.parent = a.gameObject.transform;
+		return true;
+	}
+
+	public bool loadEnemy(string[] info) {
+		if (info.Length < 4) {
+			return false;
+		}
+		EnemyController e = (EnemyController) Instantiate (enemy);
+		e.transform.position = new Vector3(float.Parse(info[1]), float.Parse(info[2]), 0);
+		e.gm = this;
+		e.spawnID = 0;
+		if (info[0] == "Player") {
+			e.target = player;
+		}
+		e.health = int.Parse (info [3]);
+		enemies.Add (e);
+		return true;
+	}
+
+	public bool loadWall(string[] info) {
+		if (info.Length < 5) {
+			return false;
+		}
+		string loadWall = "Walls/" + info[0];
+		Wall wall = Resources.Load(loadWall, typeof(Wall)) as Wall;
+		Wall newWall = Instantiate (wall) as Wall;
+		newWall.transform.position = new Vector3 (float.Parse(info[1]), float.Parse(info[2]), 0);
+		newWall.transform.Rotate (new Vector3 (0, 0, float.Parse (info [3])));
+		newWall.gm = this;
+		newWall.wallHealth = int.Parse (info[4]);
+		walls.Add (newWall);
 		return true;
 	}
 }

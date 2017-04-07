@@ -30,13 +30,6 @@ public class PersonController : MonoBehaviour {
 	public bool performingAction = false;
 
 	protected void Start() {
-		//Give person starting weapon
-		Weapon w = (Weapon)Instantiate (gm.startingWeapon);
-		w.owner = this;
-		string load = "AmmoTypes/" + w.ammoType;
-		w.bullet = Resources.Load (load, typeof(Bullet)) as Bullet;
-		weapons.Add (w);
-		w.transform.parent = gameObject.transform;
         wall = Resources.Load("Walls/Tier1Wall", typeof(Wall)) as Wall;
         itemDic.Add ("cloth", 0);
         itemDic.Add ("wood", 0);
