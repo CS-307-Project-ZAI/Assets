@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlacementDetector : MonoBehaviour {
 
-    public GameManager gm;
+	public GameManager gm;
 	SpriteRenderer spr;
 	public Sprite green;
 	public Sprite red;
@@ -23,38 +23,28 @@ public class PlacementDetector : MonoBehaviour {
 			collisions.Remove (obj);
 		}
 		removal.Clear ();
-		checkCollision ();
+		checkPlacement();
 	}
 
 	public void addCollision(GameObject obj) {
 		if (!collisions.Contains(obj)) {
 			collisions.Add(obj);
 		}
-		checkCollision ();
+		checkPlacement();
 	}
 
 	public void removeCollision(GameObject obj) {
 		removal.Add (obj);
 	}
 		
-	public void checkCollision() {
-		if (collisions.Count <= 0) {
+	public bool checkPlacement() {
+		if (collisions.Count <= 0 && gm.player.enoughMaterials) {
 			check = true; //True, we can place a wall here
 			spr.sprite = green;
-			return;
+			return true;
 		}
 		check = false; //False, cannot place a wall here
 		spr.sprite = red;
+		return false;
 	}
-    
-    public void checkMaterials(){
-        if(gm.player.enoughMaterials){
-            check = true;
-            spr.sprite = green;
-        } else {
-            check = false;
-            spr.sprite = red;
-        }
-    }
-    
 }

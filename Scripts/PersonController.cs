@@ -12,8 +12,6 @@ public class PersonController : MonoBehaviour {
 	public string personName = "Person";
     public Wall wall;
     public Dictionary<string, int> itemDic = new Dictionary<string, int>();
-	
-    
 
 	protected Vector3[] path = null;
 	protected int targetIndex;
@@ -24,7 +22,7 @@ public class PersonController : MonoBehaviour {
 	public bool kill = false;
 	public GameObject targetTag = null;
 	public float pathFindTimer = 0.0f;
-	public float pathRefreshTime = 0.0001f;
+	public float pathRefreshTime = .01f;
 	public bool followingPath = false;
 	public bool getNextPoint = false;
 	public int currentWeapon = 0;

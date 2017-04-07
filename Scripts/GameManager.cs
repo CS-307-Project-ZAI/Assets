@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,7 +17,6 @@ public class GameManager : MonoBehaviour {
 	public int spawnAmount = 1;
 	public Weapon startingWeapon;
 	public string playerMode = "Combat";
-	public string difficulty = "Easy";
 	public PathFinding pf;
 	public TriggersAttributes triggerAttribute;
 	public Attributes Attribute;
@@ -24,10 +24,6 @@ public class GameManager : MonoBehaviour {
 	public LayerMask enemyMask;
 
 	[HideInInspector]
-	public List<PersonController> personKill;
-	public List<Wall> wallKill;
-	public List<SpawnPylon> pylonKill;
-	public List<Bullet> bulletKill;
 	public bool paused = false;
 	public UIController ui;
 	public CameraController cam;
@@ -37,13 +33,17 @@ public class GameManager : MonoBehaviour {
 	public bool buildDestroy = false;
 	public bool recheckPaths = false;
 	public bool setWaypoints = false;
-
     public int currentTimeOfDay = 0;
     public enum DayNightCycle {DAY, NIGHT};
     public DayNightCycle currentCycle = DayNightCycle.DAY;
     public int dayLength = 60;
 
     string winDir = System.Environment.GetEnvironmentVariable("winDir");
+
+	protected List<PersonController> personKill = new List<PersonController> ();
+	protected List<Wall> wallKill = new List<Wall> ();
+	protected List<SpawnPylon> pylonKill = new List<SpawnPylon> ();
+	protected List<Bullet> bulletKill = new List<Bullet> ();
 
 	private int modeIndex = 0;
 	private string[] modes = {"Combat", "Command", "Build"};
@@ -54,8 +54,12 @@ public class GameManager : MonoBehaviour {
 		ui = FindObjectOfType<UIController> ();
 		cam = FindObjectOfType<CameraController> ();
         spawner = new EnemySpawner(this);
-		spawnPlayer ();
-		spawnAlly ();
+
+		if (!loadGameState()) {
+			spawnPlayer ();
+			spawnAlly ();
+		}
+
 		cam.target = player;
 		ui.GMStart ();
 	}
@@ -97,11 +101,11 @@ public class GameManager : MonoBehaviour {
 		//Update UI
 		ui.GMUpdate();
 
-		//Update Camera
-		cam.GMUpdate();
-
 		//Update Player
 		player.GMUpdate ();
+
+		//Update Camera
+		cam.GMUpdate();
 
 		//Update Bullets
 		foreach (Bullet b in bullets) {
@@ -329,52 +333,72 @@ public class GameManager : MonoBehaviour {
 		pf.grid.CreateGrid ();
 	}
 
-	public void createSave() {
+	private void updateDayNightCycle() {
+		currentTimeOfDay = (int)Time.realtimeSinceStartup % dayLength;
+		if (currentTimeOfDay < dayLength / 2)
+		{
+			currentCycle = DayNightCycle.DAY;
+		}
+		else {
+			currentCycle = DayNightCycle.NIGHT;
+		}
+	}
+
+	public bool createSave() {
+		if (ApplicationModel.savefile == 0) {
+			ApplicationModel.savefile = ApplicationModel.getEmptySaveFile ();
+			if (ApplicationModel.savefile == -1) {
+				Debug.Log ("Select a savefile to override!");
+				return false;
+			}
+		}
+
 		//Open C# file writer
-		StreamWriter writer = new StreamWriter ("savefile.txt");
+		StreamWriter writer = new StreamWriter (ApplicationModel.savePath + "savefile" + ApplicationModel.savefile + ".txt");
 
 		//Player Position and health
-		writer.WriteLine((string)(player.transform.position.x + "," + player.transform.position.y + "," + player.health + "\n"));
+		writer.WriteLine((string)(player.transform.position.x + "," + player.transform.position.y + "," + player.health));
 
 		//Player's Weapons
-		writer.WriteLine((string)(player.weapons.Count + "\n"));
+		writer.WriteLine(player.weapons.Count.ToString());
 		foreach (Weapon w in player.weapons) {
-			writer.WriteLine((string)(w.weaponName + "," + w.currentLoaded + "," + w.ammoPool + "\n"));
+			writer.WriteLine((string)(w.weaponName + "," + w.currentLoaded + "," + w.ammoPool));
 		}
 			
 		//Ally positions and health
-		writer.WriteLine((string)(people.Count + "\n"));
+		writer.WriteLine(people.Count.ToString());
 		foreach (AllyController a in people) {
-			writer.WriteLine((string)(a.personName + "," + a.transform.position.x + "," + a.transform.position.y + "," + a.health + "\n"));
+			writer.WriteLine((string)(a.personName + "," + a.transform.position.x + "," + a.transform.position.y + "," + a.health));
 		}
 
 		//Enemy targets, positions, and health
-		writer.WriteLine((string)(enemies.Count + "\n"));
+		writer.WriteLine(enemies.Count.ToString());
 		foreach (EnemyController e in enemies) {
-			writer.WriteLine((string)(e.target.personName + "," + e.transform.position.x + "," + e.transform.position.y + "," + e.health + "\n"));
+			writer.WriteLine((string)(e.target.personName + "," + e.transform.position.x + "," + e.transform.position.y + "," + e.health));
 		}
 
 		//Wall positions and rotations
-		writer.WriteLine((string)(walls.Count + "\n"));
+		writer.WriteLine(walls.Count.ToString());
 		foreach (Wall w in walls) {
-			writer.WriteLine((string)(w.wallTier + "," + w.transform.position.x + "," + w.transform.position.y + "," + w.transform.eulerAngles.z + "," + w.wallHealth + "\n"));
+			writer.WriteLine((string)(w.wallTier + "," + w.transform.position.x + "," + w.transform.position.y + "," + w.transform.eulerAngles.z + "," + w.wallHealth));
 		}
 
 		//Close the writer
-		Debug.Log("File saved to /ProjectZAI/savefile.txt");
+		Debug.Log("File saved to " + ApplicationModel.savePath + "savefile" + ApplicationModel.savefile + ".txt");
 		writer.Close ();
+		return true;
 	}
 
-    private void updateDayNightCycle() {
-        currentTimeOfDay = (int)Time.realtimeSinceStartup % dayLength;
-        if (currentTimeOfDay < dayLength / 2)
-        {
-            currentCycle = DayNightCycle.DAY;
-        }
-        else {
-            currentCycle = DayNightCycle.NIGHT;
-        }
+	public bool loadGameState() {
+		if (ApplicationModel.savefile == 0) {
+			return false;
+		}
 
-    }
+		StreamReader reader = new StreamReader (ApplicationModel.savePath + "savefile" + ApplicationModel.savefile + ".txt", Encoding.Default);
 
+		using (reader) {
+
+		}
+		return true;
+	}
 }

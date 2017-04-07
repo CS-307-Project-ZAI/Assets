@@ -26,10 +26,6 @@ public class EnemyController : PersonController {
 		attackTimer = 0.0f;
 		//gm = FindObjectOfType<GameManager> ();
 		//PathRequestManager.RequestPath(this, transform.position, target.transform.position, OnPathFound);
-		stats = (AttributesZ)Instantiate(gm.AttributeZ);
-		stats.setOwner(this);
-
-		stats.mode = "Idle";
 		pathFindTimer = pathRefreshTime;
 
 		AttackCollider acLoad = Resources.Load ("Attributes/AttackCollider", typeof(AttackCollider)) as AttackCollider;
@@ -102,18 +98,14 @@ public class EnemyController : PersonController {
 		{
 			target = stats.proximityAllies[0];
 			pathFindTimer += (pathFindTimer >= pathRefreshTime ? 0.0f : Time.deltaTime);
-			/**
-			if (euclideanDistance(transform.position, target.transform.position) > 5.0f) {
+			if (euclideanDistance(transform.position, target.transform.position) > 10.0f) {
 				//If distance is large enough, perform less resource-intensive pathfinding
 				StopCoroutine ("FollowPath");
 				float dirX = target.transform.position.x - transform.position.x;
 				float dirY = target.transform.position.y - transform.position.y;
 				Vector3 dir = new Vector3 (dirX, dirY, 0);
 				transform.position += Vector3.ClampMagnitude (dir, moveSpeed) * Time.deltaTime;
-			} else 
-			*/
-			if (pathFindTimer >= pathRefreshTime)
-			{
+			} else if (pathFindTimer >= pathRefreshTime) {
 				//Otherwise, if our timer is greater than our path refresh time, we'll perform A* for this unit
 				pathFindTimer = 0.0f;
 				PathRequestManager.RequestPath(this, transform.position, target.transform.position, OnPathFound);

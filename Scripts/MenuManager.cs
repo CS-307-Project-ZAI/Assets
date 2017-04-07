@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -9,19 +10,37 @@ public class MenuManager : GameManager {
 
 	public AllyController dummyAlly;
 	bool settingsActive = false;
+	bool loadActive = false;
 
 	public float spawnTimer = 0.0f;
 	public float spawnTime = 3.0f;
 
 	public RectTransform mainMenu;
 	public RectTransform settingsMenu;
+	Button easyButton;
+	Button mediumButton;
+	Button hardButton;
 	Slider volumeSlider;
+
+	public RectTransform loadMenu;
+	Button loadOneButton;
+	Button loadTwoButton;
+	Button loadThreeButton;
 
 	// Use this for initialization
 	void Start () {
+		ApplicationModel.savePath = Application.streamingAssetsPath + "/saves/";
 		mainMenu.gameObject.SetActive (true);
 		settingsMenu.gameObject.SetActive (false);
+		easyButton = settingsMenu.transform.Find ("Difficulty_Easy").GetComponent<Button> ();
+		mediumButton = settingsMenu.transform.Find ("Difficulty_Medium").GetComponent<Button> ();
+		hardButton = settingsMenu.transform.Find ("Difficulty_Hard").GetComponent<Button> ();
 		volumeSlider = settingsMenu.Find ("Volume Slider").GetComponent<Slider>();
+		loadMenu.gameObject.SetActive (false);
+		loadOneButton = loadMenu.transform.Find ("Load_One_Button").GetComponent<Button> ();
+		loadTwoButton = loadMenu.transform.Find ("Load_Two_Button").GetComponent<Button> ();
+		loadThreeButton = loadMenu.transform.Find ("Load_Three_Button").GetComponent<Button> ();
+		setDifficultyEasy ();
 
 		player = (PlayerController)Instantiate (player);
 		player.gm = this;
@@ -104,7 +123,7 @@ public class MenuManager : GameManager {
 	}
 
 	public void startNewGame() {
-		SceneManager.LoadSceneAsync ("Scenes/test1");
+		SceneManager.LoadSceneAsync ("Scenes/GameScene");
 	}
 
 	public void toggleSettings() {
@@ -112,9 +131,39 @@ public class MenuManager : GameManager {
 		if (settingsActive) {
 			mainMenu.gameObject.SetActive (false);
 			settingsMenu.gameObject.SetActive (true);
+			loadMenu.gameObject.SetActive (false);
 		} else {
 			settingsMenu.gameObject.SetActive (false);
 			mainMenu.gameObject.SetActive (true);
+			loadMenu.gameObject.SetActive (false);
+		}
+	}
+
+	public void toggleLoad() {
+		loadActive = !loadActive;
+		if (loadActive) {
+			mainMenu.gameObject.SetActive (false);
+			settingsMenu.gameObject.SetActive (false);
+			loadMenu.gameObject.SetActive (true);
+			if (System.IO.File.Exists (ApplicationModel.savePath + "savefile1.txt")) {
+				loadOneButton.interactable = true;
+			} else {
+				loadOneButton.interactable = false;
+			}
+			if (System.IO.File.Exists (ApplicationModel.savePath + "savefile2.txt")) {
+				loadTwoButton.interactable = true;
+			} else {
+				loadTwoButton.interactable = false;
+			}
+			if (System.IO.File.Exists (ApplicationModel.savePath + "savefile3.txt")) {
+				loadThreeButton.interactable = true;
+			} else {
+				loadThreeButton.interactable = false;
+			}
+		} else {
+			settingsMenu.gameObject.SetActive (false);
+			mainMenu.gameObject.SetActive (true);
+			loadMenu.gameObject.SetActive (false);
 		}
 	}
 
@@ -123,24 +172,49 @@ public class MenuManager : GameManager {
 		Application.Quit ();
 	}
 
-	public void loadSave() {
-
+	public void loadSave(string file) {
+		Debug.Log ("Load: " + file);
 	}
 
 	public void setDifficultyEasy() {
-		difficulty = "Easy";
+		ApplicationModel.difficulty = "Easy";
+		easyButton.interactable = false;
+		mediumButton.interactable = true;
+		hardButton.interactable = true;
 	}
 
 	public void setDifficultyMedium() {
-		difficulty = "Medium";
+		ApplicationModel.difficulty = "Medium";
+		easyButton.interactable = true;
+		mediumButton.interactable = false;
+		hardButton.interactable = true;
 	}
 
 	public void setDifficultyHard() {
-		difficulty = "Hard";
+		ApplicationModel.difficulty = "Hard";
+		easyButton.interactable = true;
+		mediumButton.interactable = true;
+		hardButton.interactable = false;
 	}
 
 	public void changeVolume() {
 		Debug.Log ("Volume set to " + volumeSlider.value);
+		ApplicationModel.volume = volumeSlider.value;
 		AudioListener.volume = volumeSlider.value;
+	}
+
+	public void loadSaveOne() {
+		ApplicationModel.savefile = 1;
+		loadSave (ApplicationModel.savePath + "savefile1.txt");
+	}
+
+	public void loadSaveTwo() {
+		ApplicationModel.savefile = 2;
+		loadSave (ApplicationModel.savePath + "savefile2.txt");
+	}
+
+	public void loadSaveThree() {
+		ApplicationModel.savefile = 3;
+		loadSave (ApplicationModel.savePath + "savefile3.txt");
 	}
 }

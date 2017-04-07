@@ -42,7 +42,7 @@ public class UIController : MonoBehaviour {
 	Button waypointButtonDelete;
 
 	//Build box right
-	Dropdown wallTierSeleted;
+	Dropdown wallTierSelected;
 	bool build = false;
 	public PlacementDetector pd;
 
@@ -57,6 +57,10 @@ public class UIController : MonoBehaviour {
 	Button hardButton;
 	Slider volumeSlider;
 
+	//Save Overwrite Menu
+	bool saveOverwriteActive = false;
+	RectTransform saveOverwriteMenu;
+
     //quest log
     Text questLog1;
     Text questLog2;
@@ -64,13 +68,15 @@ public class UIController : MonoBehaviour {
     Text questLog4;
     Text questLog5;
 
-	private bool uipaused = true;
+	private bool uiPauseUpdated = true;
 
     private string activeGUI = "";
+	private string prevWall = "";
 
 	public void GMStart() {
 		gm = FindObjectOfType<GameManager> ();
 
+		//Settings Menu
 		tint = transform.Find ("Tint").GetComponent<Image> ();
 		pauseMenu = transform.Find ("PauseMenu").GetComponent<RectTransform> ();
 		settingsMenu = transform.Find ("SettingsMenu").GetComponent<RectTransform> ();
@@ -78,9 +84,13 @@ public class UIController : MonoBehaviour {
 		mediumButton = settingsMenu.transform.Find ("Difficulty_Medium").GetComponent<Button> ();
 		hardButton = settingsMenu.transform.Find ("Difficulty_Hard").GetComponent<Button> ();
 		volumeSlider = settingsMenu.transform.Find ("Volume Slider").GetComponent<Slider> ();
-		AudioListener.volume = volumeSlider.value;
+		volumeSlider.value = ApplicationModel.volume;
+		AudioListener.volume = ApplicationModel.volume;
 
-		//infoBoxLeft = transform.Find ("Info Box Left").gameObject;
+		//Save Overwrite Menu
+		saveOverwriteMenu = transform.Find("SaveOverwriteMenu").GetComponent<RectTransform> ();
+
+		//Info Box Left
 		modeText = GameObject.Find ("Mode").GetComponent<Text>();
 		clothCount = GameObject.Find ("Cloth_Count").GetComponent<Text> ();
 		woodCount = GameObject.Find ("Wood_Count").GetComponent<Text> ();
@@ -109,7 +119,7 @@ public class UIController : MonoBehaviour {
 
 		//Build box right
 		buildBoxRight = transform.Find ("Build Box Right").gameObject;
-		wallTierSeleted = buildBoxRight.transform.Find ("Wall_Tier_Dropdown").GetComponent<Dropdown> ();
+		wallTierSelected = buildBoxRight.transform.Find ("Wall_Tier_Dropdown").GetComponent<Dropdown> ();
 			
 		//Health bar
 		playerHealth = GameObject.Find ("Health Amount").GetComponent<Text> ();
@@ -125,12 +135,13 @@ public class UIController : MonoBehaviour {
 
 	public void GMUpdate() {
 		if (gm.paused) {
-			if (!uipaused) {
+			if (!uiPauseUpdated) {
 				tint.color = new Color (0, 0, 0, 0.8f);
 				if (settingsActive) {
 					pauseMenu.gameObject.SetActive (false);
 					settingsMenu.gameObject.SetActive (true);
-					switch (gm.difficulty) {
+					saveOverwriteMenu.gameObject.SetActive (false);
+					switch (ApplicationModel.difficulty) {
 					case "Easy":
 						easyButton.interactable = false;
 						mediumButton.interactable = true;
@@ -147,18 +158,24 @@ public class UIController : MonoBehaviour {
 						hardButton.interactable = false;
 						break;
 					}
+				} else if (saveOverwriteActive) {
+					pauseMenu.gameObject.SetActive (false);
+					settingsMenu.gameObject.SetActive (false);
+					saveOverwriteMenu.gameObject.SetActive (true);
 				} else {
 					pauseMenu.gameObject.SetActive (true);
 					settingsMenu.gameObject.SetActive (false);
+					saveOverwriteMenu.gameObject.SetActive (false);
 				}
-				uipaused = true;
+				uiPauseUpdated = true;
 			}
 			return;
-		} else if (uipaused) {
+		} else if (uiPauseUpdated) {
 			tint.color = new Color (0.5f, 0.5f, 0.5f, 0.0f);
 			pauseMenu.gameObject.SetActive (false);
 			settingsMenu.gameObject.SetActive (false);
-			uipaused = false;
+			saveOverwriteMenu.gameObject.SetActive (false);
+			uiPauseUpdated = false;
 		}
 
 		if (activeGUI != gm.playerMode) {
@@ -235,12 +252,16 @@ public class UIController : MonoBehaviour {
 			break;
 		case "Build":
 			//Change Wall Selection
-			if (wallTierSeleted.captionText.text == "Tier 1 Wall") {
-				gm.player.wall.wallTier = "Tier1Wall";
-			} else if (wallTierSeleted.captionText.text == "Tier 2 Wall") {
-				gm.player.wall.wallTier = "Tier2Wall";
-			} else if (wallTierSeleted.captionText.text == "Tier 3 Wall") {
-				gm.player.wall.wallTier = "Tier3Wall";
+			if (prevWall != wallTierSelected.captionText.text) {
+				if (wallTierSelected.captionText.text == "Tier 1 Wall") {
+					gm.player.wall.wallTier = "Tier1Wall";
+				} else if (wallTierSelected.captionText.text == "Tier 2 Wall") {
+					gm.player.wall.wallTier = "Tier2Wall";
+				} else if (wallTierSelected.captionText.text == "Tier 3 Wall") {
+					gm.player.wall.wallTier = "Tier3Wall";
+				}
+				prevWall = gm.player.wall.wallTier;
+				gm.player.checkMaterials = true;
 			}
 			if (gm.build) {
 				if (!this.build) {
@@ -307,10 +328,12 @@ public class UIController : MonoBehaviour {
 
 	public void openSettings() {
 		settingsActive = true;
+		uiPauseUpdated = false;
 	}
 
 	public void closeSettings() {
 		settingsActive = false;
+		uiPauseUpdated = false;
 	}
 
 	public void quitGame() {
@@ -319,18 +342,56 @@ public class UIController : MonoBehaviour {
 	}
 
 	public void setDifficultyEasy() {
-		gm.difficulty = "Easy";
+		ApplicationModel.difficulty = "Easy";
+		uiPauseUpdated = false;
 	}
 
 	public void setDifficultyMedium() {
-		gm.difficulty = "Medium";
+		ApplicationModel.difficulty = "Medium";
+		uiPauseUpdated = false;
 	}
 
 	public void setDifficultyHard() {
-		gm.difficulty = "Hard";
+		ApplicationModel.difficulty = "Hard";
+		uiPauseUpdated = false;
+	}
+
+	public void attemptSave() {
+		if (!gm.createSave ()) {
+			saveOverwriteActive = true;
+			uiPauseUpdated = false;
+		}
+	}
+
+	public void overwriteSaveOne() {
+		ApplicationModel.savefile = 1;
+		saveOverwriteActive = false;
+		uiPauseUpdated = false;
+		gm.createSave ();
+	}
+
+	public void overwriteSaveTwo() {
+		ApplicationModel.savefile = 2;
+		saveOverwriteActive = false;
+		uiPauseUpdated = false;
+		gm.createSave ();
+	}
+
+	public void overwriteSaveThree() {
+		ApplicationModel.savefile = 3;
+		saveOverwriteActive = false;
+		uiPauseUpdated = false;
+		gm.createSave ();
+	}
+
+	public void saveBack() {
+		saveOverwriteActive = false;
+		uiPauseUpdated = false;
+		ApplicationModel.savefile = 0;
 	}
 
 	public void changeVolume() {
 		AudioListener.volume = volumeSlider.value;
+		ApplicationModel.volume = volumeSlider.value;
 	}
 }
