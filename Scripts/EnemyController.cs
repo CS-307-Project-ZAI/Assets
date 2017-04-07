@@ -18,7 +18,7 @@ public class EnemyController : PersonController {
 
 	public AttackCollider ac;
 
-	public AttributesZ stats;
+	public AttributesZ stats = null;
 
 	// Use this for initialization
 	void Start () {
@@ -34,6 +34,10 @@ public class EnemyController : PersonController {
 		ac.owner = this;
 		ac.transform.parent = transform;
 		ac.transform.position = transform.position;
+
+		stats = (AttributesZ)Instantiate(gm.AttributeZ);
+		stats.setOwner(this);
+		stats.mode = "Idle";
 
 		//Add items to enemy Inventory
 		enemyInventory = new Dictionary<string,int> ();
@@ -79,12 +83,9 @@ public class EnemyController : PersonController {
 			return;
 		}
         attackTimer += Time.deltaTime;
-		//if (stats == null) {
-		//	stats = (AttributesZ)Instantiate(gm.AttributeZ);
-		//	stats.setOwner(this);
-		//	stats.mode = "Idle";
-		//}
-		stats.GMUpdate ();
+		if (stats != null) {
+			stats.GMUpdate ();
+		}
 		getMovement ();
 		getRotation ();
 		if (targetTag != null) {
