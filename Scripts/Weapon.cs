@@ -103,7 +103,6 @@ public class Weapon : MonoBehaviour {
 	}
 
 	void interruptReload() {
-		Debug.Log ("Interrupt!!!");
 		reloadTimer = 0.0f;
 	}
 }

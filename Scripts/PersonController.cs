@@ -32,6 +32,7 @@ public class PersonController : MonoBehaviour {
 	protected void Start() {
         itemDic.Add ("cloth", 0);
         itemDic.Add ("wood", 0);
+		itemDic.Add ("stone", 0);
         itemDic.Add ("metal", 0);
 	}
 
@@ -160,4 +161,3 @@ public class PersonController : MonoBehaviour {
 
 	}
 }
-
