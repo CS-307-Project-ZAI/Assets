@@ -123,6 +123,7 @@ public class Attributes : MonoBehaviour
 	public void RemoveProx(PersonController npc) {
 		if (!inHearing.withinRange.Contains(npc) && !inSight.withinRange.Contains(npc) && !inReact.withinRange.Contains(npc))
 		{
+			npc.othersInfluenced.Remove (owner);
 			proximityNPCs.Remove(npc);
 		}
 	}
@@ -130,6 +131,7 @@ public class Attributes : MonoBehaviour
 	public void RemoveEnemy(PersonController npc) {
 		if (!inHearing.withinRange.Contains(npc) && !inSight.withinRange.Contains(npc) && !inReact.withinRange.Contains(npc))
 		{
+			npc.othersInfluenced.Remove (owner);
 			proximityEnemies.Remove(npc);
 		}
 	}
@@ -137,6 +139,7 @@ public class Attributes : MonoBehaviour
 	public void RemoveAlly(PersonController npc) {
 		if (!inHearing.withinRange.Contains(npc) && !inSight.withinRange.Contains(npc) && !inReact.withinRange.Contains(npc))
 		{
+			npc.othersInfluenced.Remove (owner);
 			proximityAllies.Remove(npc);
 		}
 	}
@@ -148,13 +151,10 @@ public class Attributes : MonoBehaviour
 	public void getClosestFoe() {
 		float shortestDistance = 1000000;
 		EnemyController closest = null;
-		for (int i = 0; i < proximityEnemies.Count; i++)
-		{
-			if (Vector3.Dot(this.transform.position - proximityEnemies[i].transform.position, owner.transform.forward) > blindspot)
-			{
+		for (int i = 0; i < proximityEnemies.Count; i++) {
+			if (Vector3.Dot(this.transform.position - proximityEnemies[i].transform.position, owner.transform.forward) > blindspot) {
 				float distance = (this.transform.position - proximityEnemies[i].transform.position).sqrMagnitude;
-				if (distance < shortestDistance)
-				{
+				if (distance < shortestDistance) {
 					shortestDistance = distance;
 					closest = (EnemyController)proximityEnemies[i];
 				}

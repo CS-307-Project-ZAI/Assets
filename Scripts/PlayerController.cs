@@ -12,6 +12,7 @@ public class PlayerController : PersonController {
 	public bool enoughMaterials = false;
 	public bool checkMaterials = true;
 	public Dictionary<string, int> playerInventory = null;
+	public int wallTier = 1;
 
     new void Start() {
 		base.Start ();
@@ -24,14 +25,15 @@ public class PlayerController : PersonController {
 
 	// GMUpdate is called by the GameManager once per frame
 	public void GMUpdate () {
+		if (gm.gameOver) {
+			return;
+		}
 		getMovement ();
 		getRotation ();
 		foreach (Weapon w in weapons) {
 			w.ControlledUpdate ();
 		}
-		if (weapons.Count > 0) {
-			getActions ();
-		}
+		getActions ();
     }
 
 	void getMovement() {
@@ -49,19 +51,62 @@ public class PlayerController : PersonController {
 
 	void getActions() {
 		if (gm.playerMode == "Combat") { //Get actions for Combat mode
-			if (!reloading) {
-				//Changing Weapons
-				if (Input.GetKeyDown (KeyCode.Alpha1) && weapons.Count > 0) {
-					currentWeapon = 0;
-					return;
-				} else if (Input.GetKeyDown (KeyCode.Alpha2) && weapons.Count > 1) {
-					currentWeapon = 1;
-					return;
-				} else if (Input.GetKeyDown (KeyCode.Alpha3) && weapons.Count > 2) {
-					currentWeapon = 2;
-					return;
+			//Changing Weapons
+			if (Input.GetKeyDown (KeyCode.Alpha1) && weapons.Count > 0 && currentWeapon != 0) {
+				reloading = false;
+				weapons [currentWeapon].SendMessage ("interruptReload");
+				currentWeapon = 0;
+				gm.ui.selectWeapon (0);
+				return;
+			} else if (Input.GetKeyDown (KeyCode.Alpha2) && weapons.Count > 1 && currentWeapon != 1) {
+				reloading = false;
+				weapons [currentWeapon].SendMessage ("interruptReload");
+				currentWeapon = 1;
+				gm.ui.selectWeapon (1);
+				return;
+			} else if (Input.GetKeyDown (KeyCode.Alpha3) && weapons.Count > 2 && currentWeapon != 2) {
+				reloading = false;
+				weapons [currentWeapon].SendMessage ("interruptReload");
+				currentWeapon = 2;
+				gm.ui.selectWeapon (2);
+				return;
+			} else if (Input.GetKeyDown (KeyCode.Alpha4) && weapons.Count > 3 && currentWeapon != 3) {
+				reloading = false;
+				weapons [currentWeapon].SendMessage ("interruptReload");
+				currentWeapon = 3;
+				gm.ui.selectWeapon (3);
+				return;
+			} else if (Input.GetKeyDown (KeyCode.Alpha5) && weapons.Count > 4 && currentWeapon != 4) {
+				reloading = false;
+				weapons [currentWeapon].SendMessage ("interruptReload");
+				currentWeapon = 4;
+				gm.ui.selectWeapon (4);
+				return;
+			} else if (Input.GetKeyDown (KeyCode.Alpha6) && weapons.Count > 5 && currentWeapon != 5) {
+				reloading = false;
+				weapons [currentWeapon].SendMessage ("interruptReload");
+				currentWeapon = 5;
+				gm.ui.selectWeapon (5);
+				return;
+			} else if (Input.GetKeyDown (KeyCode.Q) && weapons.Count > 1) {
+				//Select previous weapon
+				reloading = false;
+				weapons [currentWeapon].SendMessage ("interruptReload");
+				currentWeapon = (currentWeapon - 1);
+				if (currentWeapon < 0) {
+					currentWeapon = weapons.Count - 1;
 				}
-			
+				gm.ui.selectWeapon (currentWeapon);
+				return;
+			} else if (Input.GetKeyDown (KeyCode.E) && weapons.Count > 1) {
+				//Select next weapon
+				reloading = false;
+				weapons [currentWeapon].SendMessage ("interruptReload");
+				currentWeapon = (currentWeapon + 1) % weapons.Count;
+				gm.ui.selectWeapon (currentWeapon);
+				return;
+			}
+			if (!reloading) {
 				if (Input.GetMouseButton (0)) {
 					fireWeapon ();
 				} else {
@@ -74,6 +119,7 @@ public class PlayerController : PersonController {
 
 				if ((Input.GetKeyDown (KeyCode.R) || (Input.GetMouseButton (0) && weapons [currentWeapon].currentLoaded == 0))
 				    && (weapons [currentWeapon].ammoPool > 0 || weapons [currentWeapon].ammoPool == -1)
+					&& weapons[currentWeapon].currentLoaded != weapons[currentWeapon].clipSize
 				    && weapons [currentWeapon].clipSize != -1) {
 					reloading = true;
 				}
@@ -83,7 +129,6 @@ public class PlayerController : PersonController {
 					weapons [currentWeapon].SendMessage ("interruptReload");
 					fireWeapon ();
 				}
-
 			}
 			if (Input.GetMouseButtonDown (1)) { //Player right-clicks in Combat mode
 				GameObject obj = gm.getClickedObject (2);
@@ -143,22 +188,39 @@ public class PlayerController : PersonController {
 			//Temp Commands
 			//Add materials to inventory
 
-			if (Input.GetKeyDown (KeyCode.I)) {
-				playerInventory ["cloth"]++;
-			}
-			if (Input.GetKeyDown (KeyCode.O)) {
-				playerInventory ["wood"]++;
-			}
-			if (Input.GetKeyDown (KeyCode.P)) {
-				playerInventory ["metal"]++;
+			if (Input.GetKeyDown (KeyCode.Alpha1) && wallTier != 1) {
+				gm.ui.forceWallTierChange (0);
+				checkMaterials = true;
+				return;
+			} else if (Input.GetKeyDown (KeyCode.Alpha2) && wallTier != 2) {
+				gm.ui.forceWallTierChange (1);
+				checkMaterials = true;
+				return;
+			} else if (Input.GetKeyDown (KeyCode.Alpha3) && wallTier != 3) {
+				gm.ui.forceWallTierChange (2);
+				checkMaterials = true;
+				return;
 			}
 
-			string loadWall = "Walls/" + wall.wallTier;
-			wall = Resources.Load(loadWall, typeof(Wall)) as Wall;
+			if (gm.devMode) {
+				if (Input.GetKeyDown (KeyCode.I)) {
+					playerInventory ["cloth"]++;
+					checkMaterials = true;
+				}
+				if (Input.GetKeyDown (KeyCode.O)) {
+					playerInventory ["wood"]++;
+					checkMaterials = true;
+				}
+				if (Input.GetKeyDown (KeyCode.P)) {
+					playerInventory ["metal"]++;
+					checkMaterials = true;
+				}
+			}
+				
 			if (Input.GetKeyDown(KeyCode.R)) {
 				wallRotation = !wallRotation;
 			}
-			if (Input.GetKeyDown (KeyCode.E)) {
+			if (Input.GetKeyDown (KeyCode.E) || (gm.build && Input.GetMouseButtonDown(1))) {
 				gm.toggleBuild (false);
 			}
 			if (Input.GetKeyDown (KeyCode.Q)) {
@@ -167,18 +229,18 @@ public class PlayerController : PersonController {
 
 			if (checkMaterials) {
 				enoughMaterials = false;
-				switch (wall.wallTier) {
-				case "Tier1Wall":
+				switch (wallTier) {
+				case 1:
 					if (playerInventory ["cloth"] >= 5) {
 						enoughMaterials = true;
 					}
 					break;
-				case "Tier2Wall":
+				case 2:
 					if (playerInventory ["wood"] >= 5) {
 						enoughMaterials = true;
 					}
 					break;
-				case "Tier3Wall":
+				case 3:
 					if (playerInventory ["metal"] >= 5) {
 						enoughMaterials = true;
 					}
@@ -190,8 +252,21 @@ public class PlayerController : PersonController {
 
 			if (gm.build && Input.GetMouseButtonDown (0) && gm.ui.pd.checkPlacement()) {
 				Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
-				Wall newWall = (Wall)Instantiate (
-					               wall, new Vector3 (mousePos.x, mousePos.y, 0), 
+				string loadWall = "Walls/";
+				switch (wallTier) {
+				case 1:
+					loadWall += "Tier1Wall";
+					break;
+				case 2:
+					loadWall += "Tier2Wall";
+					break;
+				case 3:
+					loadWall += "Tier3Wall";
+					break;
+				}
+				Wall newWall = Resources.Load(loadWall, typeof(Wall)) as Wall;
+				newWall = (Wall)Instantiate (
+					               newWall, new Vector3 (mousePos.x, mousePos.y, 0), 
 					               Quaternion.LookRotation (Vector3.forward, mousePos - transform.position));
 				newWall.gm = gm;
 				gm.walls.Add (newWall);
@@ -203,14 +278,14 @@ public class PlayerController : PersonController {
 				//after wall have been built
 				//need to remove items from inventory
 
-				switch (wall.wallTier) {
-				case "Tier1Wall":
+				switch (wallTier) {
+				case 1:
 					playerInventory ["cloth"] -= 5;
 					break;
-				case "Tier2Wall":
+				case 2:
 					playerInventory ["wood"] -= 5;
 					break;
-				case "Tier3Wall":
+				case 3:
 					playerInventory ["metal"] -= 5;
 					break;
 				default:
@@ -223,7 +298,6 @@ public class PlayerController : PersonController {
 				GameObject obj = gm.getClickedObject (1);
 				if (obj != null) {
 					if (obj.tag == "Wall") {
-						
 						gm.walls.Remove((Wall) obj.GetComponent<Wall>());
 						Destroy (obj);
 						gm.recreateGrid ();
@@ -292,12 +366,14 @@ public class PlayerController : PersonController {
 	}
 
 	public override void aliveCheck() {
-		if (health <= 0) {
-			print ("Game Over!");
+		if (health <= 0 && !gm.gameOver) {
+			health = 0;
+			gm.endGame ();
 		}
 	}
 		
 	public void addItem(string key, int num) {
+		playerInventory [key] += num;
 		checkMaterials = true;
 	}
 }

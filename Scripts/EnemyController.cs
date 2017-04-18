@@ -50,7 +50,7 @@ public class EnemyController : PersonController {
 		enemyInventory ["cloth"] = clothNum;
 		enemyInventory ["wood"] = woodNum;
 		enemyInventory ["metal"] = metalNum;
-		Debug.Log("EnemyInventory: " + "cloth: " + enemyInventory ["cloth"] + " | wood: " + enemyInventory ["wood"] + " | metal: " + enemyInventory ["metal"]);
+		//Debug.Log("EnemyInventory: " + "cloth: " + enemyInventory ["cloth"] + " | wood: " + enemyInventory ["wood"] + " | metal: " + enemyInventory ["metal"]);
 		itemCloth = Resources.Load ("Materials/cloth", typeof(Item)) as Item;
 		itemWood = Resources.Load ("Materials/wood", typeof(Item)) as Item;
 		itemMetal = Resources.Load ("Materials/metal", typeof(Item)) as Item;
@@ -58,6 +58,9 @@ public class EnemyController : PersonController {
 	
 	// Update is called once per frame
 	public void GMUpdate () {
+		if (stats == null) {
+			return;
+		}
 		if (kill) {
 			//Drop items in enemy inventory here
 			int clothDropNum = this.enemyInventory["cloth"];
@@ -95,8 +98,7 @@ public class EnemyController : PersonController {
 	}
 
 	void getMovement() {
-		if (stats.mode == "Offensive")
-		{
+		if (stats.mode == "Offensive") {
 			target = stats.proximityAllies[0];
 			pathFindTimer += (pathFindTimer >= pathRefreshTime ? 0.0f : Time.deltaTime);
 			if (euclideanDistance(transform.position, target.transform.position) > 10.0f) {
@@ -112,8 +114,7 @@ public class EnemyController : PersonController {
 				PathRequestManager.RequestPath(this, transform.position, target.transform.position, OnPathFound);
 			}
 		}
-		else
-		{
+		else {
 			if(stats.mode == "Herding")
 			{
 				Vector3 direction = Vector3.ClampMagnitude((stats.influenceOfNPCs + stats.movement) * 250, 0.2f * stats.speed * Time.deltaTime);

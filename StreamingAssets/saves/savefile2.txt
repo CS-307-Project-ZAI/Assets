@@ -1,0 +1,10 @@
+0,0,50,0,0,0
+4
+Pistol,8,-1
+Revolver,6,24
+Shotgun,2,28
+Machine Gun,80,320
+1
+Billy,2,0,50
+0
+0

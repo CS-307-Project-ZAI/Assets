@@ -133,7 +133,10 @@ public class AttributesZ : Attributes
 
 
 		foreach (PersonController e in proximityEnemies)
-		{
+		{	
+			if (e == null) {
+				continue;
+			}
 			Vector3 vect = e.transform.position - this.transform.position;
 			d = vect.magnitude;
 			//print(d);

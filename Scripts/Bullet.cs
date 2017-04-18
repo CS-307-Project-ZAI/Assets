@@ -13,12 +13,7 @@ public class Bullet : MonoBehaviour {
 	public PersonController owner;
 	public int damage = 10;
 
-	public bool passthrough = false;
-
-	// Use this for initialization
-	void Start () {
-
-	}
+	public float passthrough = 0.0f;
 	
 	// Update is called once per frame
 	public void GMUpdate () {
@@ -39,7 +34,7 @@ public class Bullet : MonoBehaviour {
 		if (col.gameObject.tag == "Enemy") {
 			EnemyController e = col.gameObject.GetComponent<EnemyController> ();
 			e.applyDamage (damage, owner);
-			if (!passthrough) {
+			if ((Random.Range(0, 100) / 100.0) > passthrough) {
 				kill = true;
 			}
 		} else if (col.gameObject.tag == "Block") {
