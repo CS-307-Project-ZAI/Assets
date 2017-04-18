@@ -61,6 +61,14 @@ public class UIController : MonoBehaviour {
 	bool saveOverwriteActive = false;
 	RectTransform saveOverwriteMenu;
 
+	//GameOver Menu
+	bool gameOverActive = false;
+	RectTransform gameOverMenu;
+
+	//Quit/Save Menu
+	bool quitSaveActive = false;
+	RectTransform quitSaveMenu;
+
     //quest log
     Text questLog1;
     Text questLog2;
@@ -68,10 +76,15 @@ public class UIController : MonoBehaviour {
     Text questLog4;
     Text questLog5;
 
+	//Weapon Select Box
+	RectTransform[] slots = new RectTransform[6];
+	RectTransform selectedWep;
+	float[] selectPos = {2.5f, 37.5f, 72.5f, 107.5f, 142.5f, 177.5f};
+
 	private bool uiPauseUpdated = true;
 
     private string activeGUI = "";
-	private string prevWall = "";
+	private int prevWall = 0;
 
 	public void GMStart() {
 		gm = FindObjectOfType<GameManager> ();
@@ -89,6 +102,12 @@ public class UIController : MonoBehaviour {
 
 		//Save Overwrite Menu
 		saveOverwriteMenu = transform.Find("SaveOverwriteMenu").GetComponent<RectTransform> ();
+
+		//Game Over Menu
+		gameOverMenu = transform.Find("GameOver").GetComponent<RectTransform>();
+		gameOverMenu.gameObject.SetActive (false);
+
+		quitSaveMenu = transform.Find ("QuitMenu").GetComponent<RectTransform> ();
 
 		//Info Box Left
 		modeText = GameObject.Find ("Mode").GetComponent<Text>();
@@ -120,20 +139,49 @@ public class UIController : MonoBehaviour {
 		//Build box right
 		buildBoxRight = transform.Find ("Build Box Right").gameObject;
 		wallTierSelected = buildBoxRight.transform.Find ("Wall_Tier_Dropdown").GetComponent<Dropdown> ();
+		wallTierSelected.onValueChanged.AddListener (delegate {
+			DropdownChangeWallTier(wallTierSelected);
+		});
 			
 		//Health bar
 		playerHealth = GameObject.Find ("Health Amount").GetComponent<Text> ();
 		healthBar = GameObject.Find ("Health Bar").GetComponent<RectTransform> ();
 
+		//Quest Log
         questLog1 = GameObject.Find("log1").GetComponent<Text>();
         questLog2 = GameObject.Find("log2").GetComponent<Text>();
         questLog3 = GameObject.Find("log3").GetComponent<Text>();
         questLog4 = GameObject.Find("log4").GetComponent<Text>();
         questLog5 = GameObject.Find("log5").GetComponent<Text>();
+
+		//Weapon Select Box
+		slots[0] = GameObject.Find("Inventory Slot 1").GetComponent<RectTransform> ();
+		slots[1] = GameObject.Find("Inventory Slot 2").GetComponent<RectTransform> ();
+		slots[2] = GameObject.Find("Inventory Slot 3").GetComponent<RectTransform> ();
+		slots[3] = GameObject.Find("Inventory Slot 4").GetComponent<RectTransform> ();
+		slots[4] = GameObject.Find("Inventory Slot 5").GetComponent<RectTransform> ();
+		slots[5] = GameObject.Find("Inventory Slot 6").GetComponent<RectTransform> ();
+		selectedWep = GameObject.Find ("Selected Slot").GetComponent<RectTransform> ();
+
+		for (int i = 0; i < 6; i++) {
+			Image img = slots [i].FindChild ("WepImg").GetComponent<Image> ();
+			img.color = new Color (1.0f, 1.0f, 1.0f, 0);
+		}
+
 		updateHealthBar ();
     }
 
 	public void GMUpdate() {
+		if (gm.gameOver) {
+			if (!gameOverActive) {
+				pauseMenu.gameObject.SetActive (false);
+				settingsMenu.gameObject.SetActive (false);
+				saveOverwriteMenu.gameObject.SetActive (false);
+				quitSaveMenu.gameObject.SetActive (false);
+				gameOverMenu.gameObject.SetActive (true);
+			}
+			return;
+		}
 		if (gm.paused) {
 			if (!uiPauseUpdated) {
 				tint.color = new Color (0, 0, 0, 0.8f);
@@ -141,6 +189,7 @@ public class UIController : MonoBehaviour {
 					pauseMenu.gameObject.SetActive (false);
 					settingsMenu.gameObject.SetActive (true);
 					saveOverwriteMenu.gameObject.SetActive (false);
+					quitSaveMenu.gameObject.SetActive (false);
 					switch (ApplicationModel.difficulty) {
 					case "Easy":
 						easyButton.interactable = false;
@@ -162,10 +211,17 @@ public class UIController : MonoBehaviour {
 					pauseMenu.gameObject.SetActive (false);
 					settingsMenu.gameObject.SetActive (false);
 					saveOverwriteMenu.gameObject.SetActive (true);
+					quitSaveMenu.gameObject.SetActive (false);
+				} else if (quitSaveActive) {
+					pauseMenu.gameObject.SetActive (false);
+					settingsMenu.gameObject.SetActive (false);
+					saveOverwriteMenu.gameObject.SetActive (false);
+					quitSaveMenu.gameObject.SetActive (true);
 				} else {
 					pauseMenu.gameObject.SetActive (true);
 					settingsMenu.gameObject.SetActive (false);
 					saveOverwriteMenu.gameObject.SetActive (false);
+					quitSaveMenu.gameObject.SetActive (false);
 				}
 				uiPauseUpdated = true;
 			}
@@ -175,6 +231,7 @@ public class UIController : MonoBehaviour {
 			pauseMenu.gameObject.SetActive (false);
 			settingsMenu.gameObject.SetActive (false);
 			saveOverwriteMenu.gameObject.SetActive (false);
+			quitSaveMenu.gameObject.SetActive (false);
 			uiPauseUpdated = false;
 		}
 
@@ -251,18 +308,6 @@ public class UIController : MonoBehaviour {
 			}
 			break;
 		case "Build":
-			//Change Wall Selection
-			if (prevWall != wallTierSelected.captionText.text) {
-				if (wallTierSelected.captionText.text == "Tier 1 Wall") {
-					gm.player.wall.wallTier = "Tier1Wall";
-				} else if (wallTierSelected.captionText.text == "Tier 2 Wall") {
-					gm.player.wall.wallTier = "Tier2Wall";
-				} else if (wallTierSelected.captionText.text == "Tier 3 Wall") {
-					gm.player.wall.wallTier = "Tier3Wall";
-				}
-				prevWall = gm.player.wall.wallTier;
-				gm.player.checkMaterials = true;
-			}
 			if (gm.build) {
 				if (!this.build) {
 					this.build = true;
@@ -299,12 +344,10 @@ public class UIController : MonoBehaviour {
 
     private void updateQuestLogText(Text t, Quest q)
     {
-        if (q != null)
-        {
+        if (q != null) {
             t.text = gm.player.questLog.questLogString(q);
         }
-        else
-        {
+        else {
             t.text = "empty quest slot";
         }
     }
@@ -319,6 +362,29 @@ public class UIController : MonoBehaviour {
 		if (gm.selectedAlly != null) {
 			gm.selectedAlly.stats.aggression = target.options[target.value].text;
 		}
+	}
+
+	private void DropdownChangeWallTier(Dropdown target) {
+		gm.player.wallTier = target.value + 1;
+		gm.player.checkMaterials = true;
+		Debug.Log ("Wall Tier Changed: " + gm.player.wallTier);
+	}
+
+	public void forceWallTierChange(int val) {
+		wallTierSelected.value = val;
+		wallTierSelected.RefreshShownValue ();
+	}
+
+	public void selectWeapon(int wep) {
+		selectedWep.anchoredPosition = new Vector2 (2.5f + (wep * 35.0f), 0);
+	}
+
+	public void addWepImg(int slot, string wep) {
+		Image img = slots [slot].FindChild ("WepImg").GetComponent<Image> ();
+		Debug.Log (slot);
+		string load = "WeaponImages/" + wep;
+		img.sprite = Resources.Load(load, typeof(Sprite)) as Sprite;
+		img.color = new Color (1.0f, 1.0f, 1.0f, 1.0f);
 	}
 
 	public void unpauseGame() {
@@ -336,9 +402,26 @@ public class UIController : MonoBehaviour {
 		uiPauseUpdated = false;
 	}
 
-	public void quitGame() {
-		Debug.Log ("Quit");
-		Application.Quit ();
+	public void openQuitSave() {
+		if (ApplicationModel.savefile != 0) {
+			quitSaveActive = true;
+			uiPauseUpdated = false;
+		} else {
+			gm.quitToMenu (0);
+		}
+	}
+
+	public void closeQuitSave() {
+		quitSaveActive = false;
+		uiPauseUpdated = false;
+	}
+
+	public void saveQuit()  {
+		gm.quitToMenu (1);
+	}
+
+	public void noSaveQuit() {
+		gm.quitToMenu (0);
 	}
 
 	public void setDifficultyEasy() {

@@ -59,10 +59,10 @@ public class EnemySpawner{
 		Vector3 spawnPos;
 		do {
 			spawnPos = getRandomSpawn ();
-		} while (!isValidSpawn (spawnPos));
+		} while (!isValidSpawn (spawnPos) || (spawnPos.x > 60 || spawnPos.x < -60 || spawnPos.y > 40 || spawnPos.y < -40));
         if (gm.currentCycle == GameManager.DayNightCycle.NIGHT) {
             gm.spawnEnemyAtLocation(spawnPos, (int)Random.Range(0f,(float)EnemyType.getTypeSize()));
         }
-            gm.spawnEnemyAtLocation(spawnPos,0);
+        gm.spawnEnemyAtLocation(spawnPos,0);
     }
 }

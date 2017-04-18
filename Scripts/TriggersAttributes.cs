@@ -55,16 +55,20 @@ public class TriggersAttributes : MonoBehaviour
 		if (other.gameObject.tag == "Player" || other.gameObject.tag == "Ally")
 		{
 			PersonController temp = other.transform.gameObject.GetComponent<PersonController>();
-			if (!parentAttr.proximityAllies.Contains(temp))
-				parentAttr.proximityAllies.Add(temp);
+			if (!parentAttr.proximityAllies.Contains (temp)) {
+				parentAttr.proximityAllies.Add (temp);
+				temp.othersInfluenced.Add (parentAttr.owner);
+			}
 			if (!withinRange.Contains(temp))
 				withinRange.Add(temp);
 		}
 		if (other.gameObject.tag == "Enemy")
 		{
 			EnemyController temp = other.transform.gameObject.GetComponent<EnemyController>();
-			if (!parentAttr.proximityEnemies.Contains(temp))
-				parentAttr.proximityEnemies.Add(temp);
+			if (!parentAttr.proximityEnemies.Contains (temp)) {
+				parentAttr.proximityEnemies.Add (temp);
+				temp.othersInfluenced.Remove (parentAttr.owner);
+			}
 			if (!withinRange.Contains(temp))
 				withinRange.Add(temp);
 		}
@@ -75,6 +79,7 @@ public class TriggersAttributes : MonoBehaviour
 		if (collision.gameObject.tag == "Player" || collision.gameObject.tag == "Ally")
 		{
 			PersonController temp = collision.gameObject.GetComponent<PersonController>();
+			temp.othersInfluenced.Remove (parentAttr.owner);
 			withinRange.Remove(temp);
 			parentAttr.RemoveAlly(temp);
 			return;
@@ -82,6 +87,7 @@ public class TriggersAttributes : MonoBehaviour
 		if (collision.gameObject.tag == "Enemy")
 		{
 			PersonController temp = collision.gameObject.GetComponent<PersonController>();
+			temp.othersInfluenced.Remove (parentAttr.owner);
 			withinRange.Remove(temp);
 			parentAttr.RemoveEnemy(temp);
 			return;

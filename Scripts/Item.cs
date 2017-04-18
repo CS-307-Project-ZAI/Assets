@@ -12,7 +12,7 @@ public class Item : MonoBehaviour {
 	{
 		if (other.gameObject.tag == "Player") {
 			PersonController temp = other.transform.gameObject.GetComponent<PersonController> ();
-			gm.player.playerInventory [itemType]++;
+			gm.player.addItem (itemType, 1);
 			Destroy (this.gameObject);
 		}
 	}

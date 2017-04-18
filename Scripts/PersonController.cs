@@ -10,7 +10,6 @@ public class PersonController : MonoBehaviour {
 	public GameManager gm;
 	public float rotationFix = 0.0f;
 	public string personName = "Person";
-    public Wall wall;
     public Dictionary<string, int> itemDic = new Dictionary<string, int>();
 
 	protected Vector3[] path = null;
@@ -28,9 +27,9 @@ public class PersonController : MonoBehaviour {
 	public int currentWeapon = 0;
 	public float attackTimer = 0.0f;
 	public bool performingAction = false;
+	public List<PersonController> othersInfluenced = new List<PersonController> ();
 
 	protected void Start() {
-        wall = Resources.Load("Walls/Tier1Wall", typeof(Wall)) as Wall;
         itemDic.Add ("cloth", 0);
         itemDic.Add ("wood", 0);
         itemDic.Add ("metal", 0);
@@ -54,6 +53,9 @@ public class PersonController : MonoBehaviour {
 
 	public void applyDamage(int dmg, PersonController from) {
 		this.health -= dmg;
+		if (this.health < 0) {
+			this.health = 0;
+		}
 		if (this.tag == "Player") {
 			gm.ui.updateHealthBar ();
 		}
@@ -103,8 +105,6 @@ public class PersonController : MonoBehaviour {
 		if (pathSuccessful) {
 			path = newPath;
 			targetIndex = 0;
-			//SendMessage ("StopCoroutine", "FollowPath");
-			//SendMessage ("StartCoroutine", "FollowPath");
 			StopCoroutine ("FollowPath");
 			StartCoroutine ("FollowPath");
 		}
@@ -139,6 +139,25 @@ public class PersonController : MonoBehaviour {
 			return pc.buildRate;
 		}
 		return 0;
+	}
+
+	public Weapon addWeapon(string wepName) {
+		string load = "Weapons/" + wepName;
+		Weapon wep = Resources.Load (load, typeof(Weapon)) as Weapon;
+		wep = (Weapon)Instantiate (wep);
+		wep.owner = this;
+		load = "AmmoTypes/" + wep.ammoType;
+		wep.bullet = Resources.Load (load, typeof(Bullet)) as Bullet;
+		this.weapons.Add (wep);
+		wep.transform.parent = this.transform;
+		if (transform.gameObject.tag == "Player") {
+			gm.ui.addWepImg (this.weapons.IndexOf (wep), wep.weaponName);
+		}
+		return wep;
+	}
+
+	public void removeWeapon(Weapon w) {
+
 	}
 }
 

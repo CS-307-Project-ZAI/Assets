@@ -123,6 +123,7 @@ public class MenuManager : GameManager {
 	}
 
 	public void startNewGame() {
+		ApplicationModel.savefile = 0;
 		SceneManager.LoadSceneAsync ("Scenes/GameScene");
 	}
 

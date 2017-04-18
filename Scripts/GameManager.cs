@@ -3,8 +3,10 @@ using System.Text;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour {
+	public bool devMode = false;
 	public PlayerController player;
 	public AllyController ally;
 	public List<AllyController> people;
@@ -15,7 +17,6 @@ public class GameManager : MonoBehaviour {
 	public List<Wall> walls;
 	public List<SpawnPylon> pylons;
 	public int spawnAmount = 1;
-	public Weapon startingWeapon;
 	public string playerMode = "Combat";
 	public PathFinding pf;
 	public TriggersAttributes triggerAttribute;
@@ -37,6 +38,7 @@ public class GameManager : MonoBehaviour {
     public enum DayNightCycle {DAY, NIGHT};
     public DayNightCycle currentCycle = DayNightCycle.DAY;
     public int dayLength = 60;
+	public bool gameOver = false;
 
     string winDir = System.Environment.GetEnvironmentVariable("winDir");
 
@@ -56,6 +58,7 @@ public class GameManager : MonoBehaviour {
 		cam = FindObjectOfType<CameraController> ();
         spawner = new EnemySpawner(this);
 
+		ui.GMStart ();
 		if (!loadGameState()) {
 			Debug.Log ("Load failed...Starting new game!");
 			spawnPlayer ();
@@ -63,7 +66,7 @@ public class GameManager : MonoBehaviour {
 		}
 
 		cam.target = player;
-		ui.GMStart ();
+		//ui.GMStart ();
 		ready = true;
 	}
 
@@ -182,6 +185,19 @@ public class GameManager : MonoBehaviour {
 					selectRing = null;
 				}
 			}
+			foreach (PersonController other in p.othersInfluenced) {
+				if (other.gameObject.tag == "Enemy") {
+					EnemyController temp = (EnemyController)other;
+					temp.stats.proximityAllies.Remove (p);
+					temp.stats.proximityEnemies.Remove (p);
+					temp.stats.proximityNPCs.Remove (p);
+				} else if (other.gameObject.tag == "Ally") {
+					AllyController temp = (AllyController)other;
+					temp.stats.proximityAllies.Remove (p);
+					temp.stats.proximityEnemies.Remove (p);
+					temp.stats.proximityNPCs.Remove (p);
+				}
+			}
 			p.StopCoroutine ("FollowPath");
 			Destroy (p.gameObject);
 		}
@@ -251,13 +267,10 @@ public class GameManager : MonoBehaviour {
 		player.gm = this;
 		player.personName = "Player";
 
-		//Give person starting weapon
-		Weapon w = (Weapon)Instantiate (startingWeapon);
-		w.owner = player;
-		string load = "AmmoTypes/" + w.ammoType;
-		w.bullet = Resources.Load (load, typeof(Bullet)) as Bullet;
-		player.weapons.Add (w);
-		w.transform.parent = player.gameObject.transform;
+		player.addWeapon ("Pistol");
+		player.addWeapon ("Revolver");
+		player.addWeapon ("Shotgun");
+		player.addWeapon ("Machine Gun");
 	}
 
 	void spawnAlly() {
@@ -267,19 +280,13 @@ public class GameManager : MonoBehaviour {
 		a.personName = "Billy";
 		a.transform.position = new Vector3 (2, 0, 0);
 
-		//Give person starting weapon
-		Weapon w = (Weapon)Instantiate (startingWeapon);
-		w.owner = a;
-		string load = "AmmoTypes/" + w.ammoType;
-		w.bullet = Resources.Load (load, typeof(Bullet)) as Bullet;
-		a.weapons.Add (w);
-		w.transform.parent = a.gameObject.transform;
+		a.addWeapon ("Pistol");
 	}
     
 	public void spawnEnemyAtLocation(Vector3 spawnLocation, int spawnID) {
 		EnemyController e = (EnemyController) Instantiate (enemy);
 		e.transform.position = spawnLocation;
-        e.gm = this;
+       	e.gm = this;
         e.spawnID = spawnID;
 		enemies.Add (e);
 	}
@@ -366,6 +373,25 @@ public class GameManager : MonoBehaviour {
 		}
 	}
 
+	public void endGame() {
+		gameOver = true;
+		if (ApplicationModel.savefile != 0) {
+			string path = ApplicationModel.savePath + "savefile" + ApplicationModel.savefile + ".txt";
+			File.Delete (path);
+		}
+	}
+
+	public void backToMenu() {
+		SceneManager.LoadSceneAsync ("Scenes/Main Menu");
+	}
+
+	public void quitToMenu(int option) {
+		if (ApplicationModel.savefile != 0 && option == 1) {
+			createSave ();
+		}
+		SceneManager.LoadSceneAsync ("Scenes/Main Menu");
+	}
+
 	public bool createSave() {
 		if (ApplicationModel.savefile == 0) {
 			ApplicationModel.savefile = ApplicationModel.getEmptySaveFile ();
@@ -433,6 +459,7 @@ public class GameManager : MonoBehaviour {
 
 			//Load Player Weapons
 			int numWeapons = int.Parse (reader.ReadLine());
+			Debug.Log ("<<<<-NUMBER OF WEAPONS: " + numWeapons + "->>>>");
 			string[] weaponInfo;
 			for (int i = 0; i < numWeapons; i++) {
 				weaponInfo = reader.ReadLine ().Split (',');
@@ -499,15 +526,7 @@ public class GameManager : MonoBehaviour {
 		if (info.Length < 3) {
 			return false;
 		}
-		//Debug.Log ("Weapons/" + info [0]);
-		//string load = "Weapons/" + info [0];
-		//Weapon w = Resources.Load ("Weapons/" + info [0]) as Weapon;
-		Weapon w = (Weapon)Instantiate (startingWeapon);
-		w.owner = player;
-		string load = "AmmoTypes/" + w.ammoType;
-		w.bullet = Resources.Load (load, typeof(Bullet)) as Bullet;
-		player.weapons.Add (w);
-		w.transform.parent = player.gameObject.transform;
+		Weapon w = player.addWeapon (info [0]);
 		w.currentLoaded = int.Parse (info [1]);
 		w.ammoPool = int.Parse (info [2]);
 		return true;
@@ -526,12 +545,7 @@ public class GameManager : MonoBehaviour {
 		a.health = int.Parse (info [3]);
 
 		//Give person starting weapon
-		Weapon w = (Weapon)Instantiate (startingWeapon);
-		w.owner = a;
-		string load = "AmmoTypes/" + w.ammoType;
-		w.bullet = Resources.Load (load, typeof(Bullet)) as Bullet;
-		a.weapons.Add (w);
-		w.transform.parent = a.gameObject.transform;
+		Weapon w = a.addWeapon("Pistol");
 		return true;
 	}
 
