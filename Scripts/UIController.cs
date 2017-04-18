@@ -26,6 +26,7 @@ public class UIController : MonoBehaviour {
 	Text modeText;
 	Text clothCount;
 	Text woodCount;
+	Text stoneCount;
 	Text metalCount;
 
 	//Combat box right
@@ -42,7 +43,7 @@ public class UIController : MonoBehaviour {
 	Button waypointButtonDelete;
 
 	//Build box right
-	Dropdown wallTierSelected;
+	Dropdown buildingSelected;
 	bool build = false;
 	public PlacementDetector pd;
 
@@ -113,6 +114,7 @@ public class UIController : MonoBehaviour {
 		modeText = GameObject.Find ("Mode").GetComponent<Text>();
 		clothCount = GameObject.Find ("Cloth_Count").GetComponent<Text> ();
 		woodCount = GameObject.Find ("Wood_Count").GetComponent<Text> ();
+		stoneCount = GameObject.Find ("Stone_Count").GetComponent<Text> ();
 		metalCount = GameObject.Find ("Metal_Count").GetComponent<Text> ();
 
 		//Combat box right
@@ -138,9 +140,9 @@ public class UIController : MonoBehaviour {
 
 		//Build box right
 		buildBoxRight = transform.Find ("Build Box Right").gameObject;
-		wallTierSelected = buildBoxRight.transform.Find ("Wall_Tier_Dropdown").GetComponent<Dropdown> ();
-		wallTierSelected.onValueChanged.AddListener (delegate {
-			DropdownChangeWallTier(wallTierSelected);
+		buildingSelected = buildBoxRight.transform.Find ("Wall_Tier_Dropdown").GetComponent<Dropdown> ();
+		buildingSelected.onValueChanged.AddListener (delegate {
+			DropdownChangeWallTier(buildingSelected);
 		});
 			
 		//Health bar
@@ -262,6 +264,7 @@ public class UIController : MonoBehaviour {
 		//Counts items in playerItems and displays them
 		clothCount.text = inventory ["cloth"].ToString ();
 		woodCount.text = inventory ["wood"].ToString ();
+		stoneCount.text = inventory ["stone"].ToString ();
 		metalCount.text = inventory ["metal"].ToString ();
 
 
@@ -316,7 +319,7 @@ public class UIController : MonoBehaviour {
 				Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
 				pd.transform.position = new Vector3 (mousePos.x, mousePos.y, 0);
 				Vector3 playerRot = gm.player.transform.rotation.eulerAngles;
-				pd.transform.eulerAngles = new Vector3 (0, 0, playerRot.z - gm.player.rotationFix + (gm.player.wallRotation ? 90.0f : 0));
+				pd.transform.eulerAngles = new Vector3 (0, 0, playerRot.z - gm.player.rotationFix + (gm.player.buildingRotation ? 90.0f : 0));
 			}
 			break;
 		}
@@ -365,14 +368,14 @@ public class UIController : MonoBehaviour {
 	}
 
 	private void DropdownChangeWallTier(Dropdown target) {
-		gm.player.wallTier = target.value + 1;
+		gm.player.buildingSelected = target.value + 1;
 		gm.player.checkMaterials = true;
-		Debug.Log ("Wall Tier Changed: " + gm.player.wallTier);
+		Debug.Log ("Building Selected Changed: " + gm.player.buildingSelected);
 	}
 
-	public void forceWallTierChange(int val) {
-		wallTierSelected.value = val;
-		wallTierSelected.RefreshShownValue ();
+	public void forceBuildingChange(int val) {
+		buildingSelected.value = val;
+		buildingSelected.RefreshShownValue ();
 	}
 
 	public void selectWeapon(int wep) {

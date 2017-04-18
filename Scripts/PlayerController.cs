@@ -6,13 +6,13 @@ using UnityEngine.EventSystems;
 public class PlayerController : PersonController {
 
 	public List<AllyController> allies;
-	public bool wallRotation = false;
+	public bool buildingRotation = false;
 	public int buildRate = 1;
     public QuestLog questLog;
 	public bool enoughMaterials = false;
 	public bool checkMaterials = true;
 	public Dictionary<string, int> playerInventory = null;
-	public int wallTier = 1;
+	public int buildingSelected = 1;
 
     new void Start() {
 		base.Start ();
@@ -178,37 +178,36 @@ public class PlayerController : PersonController {
 				gm.toggleWaypoints ();
 			}
 		} else if (gm.playerMode == "Build") { //Get actions for Build mode
-			//Will Change Wall according to UI Wall Tier selected in the dropdown
-
-			//Wall recipes (TEMP):
-			//Tier1Wall: 5 Cloth
-			//Tier2Wall: 5 Wood
-			//Tier3Wall: 5 Metal
-
-			//Temp Commands
-			//Add materials to inventory
-
-			if (Input.GetKeyDown (KeyCode.Alpha1) && wallTier != 1) {
-				gm.ui.forceWallTierChange (0);
+			//Will Change Building according to UI Building Tier selected in the dropdown
+			if (Input.GetKeyDown (KeyCode.Alpha1) && buildingSelected != 1) {
+				gm.ui.forceBuildingChange (0);
 				checkMaterials = true;
 				return;
-			} else if (Input.GetKeyDown (KeyCode.Alpha2) && wallTier != 2) {
-				gm.ui.forceWallTierChange (1);
+			} else if (Input.GetKeyDown (KeyCode.Alpha2) && buildingSelected != 2) {
+				gm.ui.forceBuildingChange (1);
 				checkMaterials = true;
 				return;
-			} else if (Input.GetKeyDown (KeyCode.Alpha3) && wallTier != 3) {
-				gm.ui.forceWallTierChange (2);
+			} else if (Input.GetKeyDown (KeyCode.Alpha3) && buildingSelected != 3) {
+				gm.ui.forceBuildingChange (2);
+				checkMaterials = true;
+				return;
+			} else if (Input.GetKeyDown (KeyCode.Alpha4) && buildingSelected != 4) {
+				gm.ui.forceBuildingChange (3);
 				checkMaterials = true;
 				return;
 			}
 
 			if (gm.devMode) {
-				if (Input.GetKeyDown (KeyCode.I)) {
+				if (Input.GetKeyDown (KeyCode.U)) {
 					playerInventory ["cloth"]++;
 					checkMaterials = true;
 				}
-				if (Input.GetKeyDown (KeyCode.O)) {
+				if (Input.GetKeyDown (KeyCode.I)) {
 					playerInventory ["wood"]++;
+					checkMaterials = true;
+				}
+				if (Input.GetKeyDown (KeyCode.O)) {
+					playerInventory ["stone"]++;
 					checkMaterials = true;
 				}
 				if (Input.GetKeyDown (KeyCode.P)) {
@@ -216,9 +215,9 @@ public class PlayerController : PersonController {
 					checkMaterials = true;
 				}
 			}
-				
+
 			if (Input.GetKeyDown(KeyCode.R)) {
-				wallRotation = !wallRotation;
+				buildingRotation = !buildingRotation;
 			}
 			if (Input.GetKeyDown (KeyCode.E) || (gm.build && Input.GetMouseButtonDown(1))) {
 				gm.toggleBuild (false);
@@ -229,76 +228,64 @@ public class PlayerController : PersonController {
 
 			if (checkMaterials) {
 				enoughMaterials = false;
-				switch (wallTier) {
+				Building temp = null;
+				switch (buildingSelected) {
 				case 1:
-					if (playerInventory ["cloth"] >= 5) {
-						enoughMaterials = true;
-					}
+					temp = Resources.Load ("Buildings/Tier1Wall", typeof(Building)) as Building;
 					break;
 				case 2:
-					if (playerInventory ["wood"] >= 5) {
-						enoughMaterials = true;
-					}
+					temp = Resources.Load ("Buildings/Tier2Wall", typeof(Building)) as Building;
 					break;
 				case 3:
-					if (playerInventory ["metal"] >= 5) {
-						enoughMaterials = true;
-					}
+					temp = Resources.Load ("Buildings/Tier3Wall", typeof(Building)) as Building;
+					break;
+				case 4:
+					temp = Resources.Load ("Buildings/Toolbench", typeof(Building)) as Building;
 					break;
 				}
+				enoughMaterials = checkBuildingMaterials (temp);
 				checkMaterials = false;
 			}
 				
 
 			if (gm.build && Input.GetMouseButtonDown (0) && gm.ui.pd.checkPlacement()) {
 				Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
-				string loadWall = "Walls/";
-				switch (wallTier) {
+				string loadBuilding = "Buildings/";
+				switch (buildingSelected) {
 				case 1:
-					loadWall += "Tier1Wall";
+					loadBuilding += "Tier1Wall";
 					break;
 				case 2:
-					loadWall += "Tier2Wall";
+					loadBuilding += "Tier2Wall";
 					break;
 				case 3:
-					loadWall += "Tier3Wall";
+					loadBuilding += "Tier3Wall";
+					break;
+				case 4:
+					loadBuilding += "Toolbench";
 					break;
 				}
-				Wall newWall = Resources.Load(loadWall, typeof(Wall)) as Wall;
-				newWall = (Wall)Instantiate (
-					               newWall, new Vector3 (mousePos.x, mousePos.y, 0), 
-					               Quaternion.LookRotation (Vector3.forward, mousePos - transform.position));
-				newWall.gm = gm;
-				gm.walls.Add (newWall);
-				if (wallRotation) {
-					newWall.transform.Rotate (new Vector3 (0, 0, 90.0f));
+
+				Building newBuilding = Resources.Load (loadBuilding, typeof(Building)) as Building;
+				newBuilding = (Building)Instantiate (newBuilding, new Vector3 (mousePos.x, mousePos.y, 0), 
+					Quaternion.LookRotation (Vector3.forward, mousePos - transform.position));
+				newBuilding.gm = gm;
+				gm.buildings.Add (newBuilding);
+				if (buildingRotation) {
+					newBuilding.transform.Rotate (new Vector3 (0, 0, 90.0f));
 				}
 				gm.toggleBuild (true);
 
-				//after wall have been built
-				//need to remove items from inventory
-
-				switch (wallTier) {
-				case 1:
-					playerInventory ["cloth"] -= 5;
-					break;
-				case 2:
-					playerInventory ["wood"] -= 5;
-					break;
-				case 3:
-					playerInventory ["metal"] -= 5;
-					break;
-				default:
-					break;
-				}
+				//Clear resources that have been consumed
+				spendMaterials(newBuilding);
 				checkMaterials = true;
 			}
 
 			if (gm.buildDestroy && Input.GetMouseButtonDown (0)) {
 				GameObject obj = gm.getClickedObject (1);
 				if (obj != null) {
-					if (obj.tag == "Wall") {
-						gm.walls.Remove((Wall) obj.GetComponent<Wall>());
+					if (obj.tag == "Building") {
+						gm.buildings.Remove((Building) obj.GetComponent<Building>());
 						Destroy (obj);
 						gm.recreateGrid ();
 					}
@@ -319,6 +306,25 @@ public class PlayerController : PersonController {
             printQuestLog();
         }
     }
+
+	private void spendMaterials(Building b) {
+		for (int i = 0; i < b.materialsNeeded.Length; i++) {
+			playerInventory [Building.materialNames [i]] -= b.materialsNeeded [i];
+		}
+	}
+
+	private bool checkBuildingMaterials(Building b) {
+		if (b == null) {
+			return false;
+		}
+		for (int i = 0; i < b.materialsNeeded.Length; i++) {
+			//Check each Material in the Building requirements
+			if (playerInventory [Building.materialNames [i]] < b.materialsNeeded[i]) {
+				return false;
+			}
+		}
+		return true;
+	}
 
     public void printQuestLog()
     {
@@ -377,5 +383,3 @@ public class PlayerController : PersonController {
 		checkMaterials = true;
 	}
 }
-
-

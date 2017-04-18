@@ -41,7 +41,7 @@ public class EnemySpawner{
             float dist = (e.transform.position - spawnPos).magnitude;
             if (dist < minDistanceToSpawnFromOther) return false;
         }
-        foreach (Wall e in gm.walls)
+        foreach (Building e in gm.buildings)
         {
             float dist = (e.transform.position - spawnPos).magnitude;
             if (dist < minDistanceToSpawnFromOther) return false;

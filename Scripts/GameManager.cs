@@ -14,7 +14,7 @@ public class GameManager : MonoBehaviour {
 	public List<EnemyController> enemies;
 	public List<EnemyController> targetedEnemies;
 	public List<Bullet> bullets;
-	public List<Wall> walls;
+	public List<Building> buildings;
 	public List<SpawnPylon> pylons;
 	public int spawnAmount = 1;
 	public string playerMode = "Combat";
@@ -43,7 +43,7 @@ public class GameManager : MonoBehaviour {
     string winDir = System.Environment.GetEnvironmentVariable("winDir");
 
 	protected List<PersonController> personKill = new List<PersonController> ();
-	protected List<Wall> wallKill = new List<Wall> ();
+	protected List<Building> buildingKill = new List<Building> ();
 	protected List<SpawnPylon> pylonKill = new List<SpawnPylon> ();
 	protected List<Bullet> bulletKill = new List<Bullet> ();
 
@@ -60,7 +60,9 @@ public class GameManager : MonoBehaviour {
 
 		ui.GMStart ();
 		if (!loadGameState()) {
-			Debug.Log ("Load failed...Starting new game!");
+			if (devMode) {
+				Debug.Log ("Load failed...Starting new game!");
+			}
 			spawnPlayer ();
 			spawnAlly ();
 		}
@@ -153,11 +155,11 @@ public class GameManager : MonoBehaviour {
 			selectRing.transform.position = new Vector3 (selectedAlly.transform.position.x, selectedAlly.transform.position.y, 0);
 		}
 
-		//Update Walls
-		foreach (Wall w in walls) {
-			w.GMUpdate ();
-			if (w.kill) {
-				wallKill.Add (w);
+		//Update Buildings
+		foreach (Building b in buildings) {
+			b.GMUpdate ();
+			if (b.kill) {
+				buildingKill.Add (b);
 			}
 		}
 
@@ -203,12 +205,12 @@ public class GameManager : MonoBehaviour {
 		}
 		personKill.Clear ();
 
-		//Destroy walls in kill list and clear it
-		foreach (Wall w in wallKill) {
-			walls.Remove (w);
-			Destroy (w.gameObject);
+		//Destroy buildings in kill list and clear it
+		foreach (Building b in buildingKill) {
+			buildings.Remove (b);
+			Destroy (b.gameObject);
 		}
-		wallKill.Clear ();
+		buildingKill.Clear ();
 
 		//Destroy pylons in kill list and clear it
 		foreach (SpawnPylon p in pylonKill) {
@@ -256,7 +258,9 @@ public class GameManager : MonoBehaviour {
 			hit = Physics2D.Raycast (rayPos, Vector2.zero, 0f);
 		}
 		if (hit) {
-			Debug.Log (hit.transform.name);
+			if (devMode) {
+				Debug.Log (hit.transform.name);
+			}
 			return hit.transform.gameObject;
 		}
 		else return null;
@@ -268,9 +272,9 @@ public class GameManager : MonoBehaviour {
 		player.personName = "Player";
 
 		player.addWeapon ("Pistol");
-		player.addWeapon ("Revolver");
-		player.addWeapon ("Shotgun");
-		player.addWeapon ("Machine Gun");
+		//player.addWeapon ("Revolver");
+		//player.addWeapon ("Shotgun");
+		//player.addWeapon ("Machine Gun");
 	}
 
 	void spawnAlly() {
@@ -396,7 +400,6 @@ public class GameManager : MonoBehaviour {
 		if (ApplicationModel.savefile == 0) {
 			ApplicationModel.savefile = ApplicationModel.getEmptySaveFile ();
 			if (ApplicationModel.savefile == -1) {
-				Debug.Log ("Select a savefile to override!");
 				return false;
 			}
 		}
@@ -430,14 +433,16 @@ public class GameManager : MonoBehaviour {
 			}
 		}
 
-		//Wall positions and rotations
-		writer.WriteLine(walls.Count.ToString());
-		foreach (Wall w in walls) {
-			writer.WriteLine((string)(w.wallTier + "," + w.transform.position.x + "," + w.transform.position.y + "," + w.transform.eulerAngles.z + "," + w.wallHealth));
+		//Building positions and rotations
+		writer.WriteLine(buildings.Count.ToString());
+		foreach (Building b in buildings) {
+			writer.WriteLine((string)(b.buildingName + "," + b.transform.position.x + "," + b.transform.position.y + "," + b.transform.eulerAngles.z + "," + b.buildingHealth));
 		}
 
 		//Close the writer
-		Debug.Log("File saved to " + ApplicationModel.savePath + "savefile" + ApplicationModel.savefile + ".txt");
+		if (devMode) {
+			Debug.Log ("File saved to " + ApplicationModel.savePath + "savefile" + ApplicationModel.savefile + ".txt");
+		}
 		writer.Close ();
 		return true;
 	}
@@ -459,7 +464,6 @@ public class GameManager : MonoBehaviour {
 
 			//Load Player Weapons
 			int numWeapons = int.Parse (reader.ReadLine());
-			Debug.Log ("<<<<-NUMBER OF WEAPONS: " + numWeapons + "->>>>");
 			string[] weaponInfo;
 			for (int i = 0; i < numWeapons; i++) {
 				weaponInfo = reader.ReadLine ().Split (',');
@@ -488,12 +492,12 @@ public class GameManager : MonoBehaviour {
 				}
 			}
 
-			//Load Walls
-			int numWalls = int.Parse (reader.ReadLine());
-			string[] wallInfo;
-			for (int i = 0; i < numWalls; i++) {
-				wallInfo = reader.ReadLine ().Split (',');
-				if (!loadWall (wallInfo)) {
+			//Load Buildings
+			int numBuildings = int.Parse (reader.ReadLine());
+			string[] buildingInfo;
+			for (int i = 0; i < numBuildings; i++) {
+				buildingInfo = reader.ReadLine ().Split (',');
+				if (!loadBuilding (buildingInfo)) {
 					return false;
 				}
 			}
@@ -565,18 +569,18 @@ public class GameManager : MonoBehaviour {
 		return true;
 	}
 
-	public bool loadWall(string[] info) {
+	public bool loadBuilding(string[] info) {
 		if (info.Length < 5) {
 			return false;
 		}
-		string loadWall = "Walls/" + info[0];
-		Wall wall = Resources.Load(loadWall, typeof(Wall)) as Wall;
-		Wall newWall = Instantiate (wall) as Wall;
-		newWall.transform.position = new Vector3 (float.Parse(info[1]), float.Parse(info[2]), 0);
-		newWall.transform.Rotate (new Vector3 (0, 0, float.Parse (info [3])));
-		newWall.gm = this;
-		newWall.wallHealth = int.Parse (info[4]);
-		walls.Add (newWall);
+		string loadBuilding = "Buildings/" + info[0];
+		Building newBuilding = Resources.Load(loadBuilding, typeof(Building)) as Building;
+		newBuilding = Instantiate (newBuilding) as Building;
+		newBuilding.transform.position = new Vector3 (float.Parse(info[1]), float.Parse(info[2]), 0);
+		newBuilding.transform.Rotate (new Vector3 (0, 0, float.Parse (info [3])));
+		newBuilding.gm = this;
+		newBuilding.buildingHealth = int.Parse (info[4]);
+		buildings.Add (newBuilding);
 		return true;
 	}
 }
