@@ -19,6 +19,19 @@ public class PathFinding : MonoBehaviour {
         
     }
 
+	public Vector3[] quickCheck(Vector3 startPos, Vector3 targetPos) {
+		//Raycast to quick-check path
+		float dist = getEuclideanDistance(startPos, targetPos);
+		Vector3 vect = new Vector3 (targetPos.x - startPos.x, targetPos.y - startPos.y, 0);
+		//UnityEngine.Debug.DrawRay(startPos, vect, Color.red, 1);
+		if (!Physics2D.Raycast (startPos, vect, dist, grid.unwalkableMask)) {
+			Vector3[] waypoints = new Vector3[1];
+			waypoints [0] = targetPos;
+			return waypoints;
+		}
+		return null;
+	}
+
     IEnumerator FindPath(Vector3 startPos, Vector3 targetPos) {
 		//Using A* to find a path
         Vector3[] waypoints = new Vector3[0];
@@ -28,58 +41,47 @@ public class PathFinding : MonoBehaviour {
 		bool shortcut = false;
        	//UnityEngine.Debug.Log("startnode walkable =" + startNode.walkable + " endNode walkable = " + targetNode.walkable);
         if (startNode.walkable && targetNode.walkable) {
-			//Raycast to quick-check path
-			float dist = getEuclideanDistance(startPos, targetPos);
-			Vector3 vect = new Vector3 (targetPos.x - startPos.x, targetPos.y - startPos.y, 0);
-			//UnityEngine.Debug.DrawRay(startPos, vect, Color.red, 1);
-			if (!Physics2D.Raycast (startPos, vect, dist, grid.unwalkableMask)) {
-				waypoints = new Vector3[1];
-				waypoints [0] = targetPos;
-				pathSuccess = true;
-				shortcut = true;
-			} else {
 			//	UnityEngine.Debug.Log ("No straightline...performing A-star");
-				Heap<Node> openSet = new Heap<Node> (grid.MaxSize);
-				HashSet<Node> closedSet = new HashSet<Node> ();
-				openSet.Add (startNode);
+			Heap<Node> openSet = new Heap<Node> (grid.MaxSize);
+			HashSet<Node> closedSet = new HashSet<Node> ();
+			openSet.Add (startNode);
 
-				while (openSet.Count > 0) {
-					Node currentNode = openSet.RemoveFirst ();
-					closedSet.Add (currentNode);
+			while (openSet.Count > 0) {
+				Node currentNode = openSet.RemoveFirst ();
+				closedSet.Add (currentNode);
 
-					if (currentNode == targetNode) {
-						pathSuccess = true;
-						break;
+				if (currentNode == targetNode) {
+					pathSuccess = true;
+					break;
+				}
+
+				foreach (Node neighbour in grid.GetNeighbours(currentNode)) {
+					if (!neighbour.walkable || closedSet.Contains (neighbour)) {
+						continue;
 					}
 
-					foreach (Node neighbour in grid.GetNeighbours(currentNode)) {
-						if (!neighbour.walkable || closedSet.Contains (neighbour)) {
-							continue;
-						}
+					int newMovementCostToNeighbour = currentNode.gCost + getDistance (currentNode, neighbour);
+					if (newMovementCostToNeighbour < neighbour.gCost || !openSet.Contains (neighbour)) {
+						neighbour.gCost = newMovementCostToNeighbour;
+						neighbour.hCost = getDistance (neighbour, targetNode);
 
-						int newMovementCostToNeighbour = currentNode.gCost + getDistance (currentNode, neighbour);
-						if (newMovementCostToNeighbour < neighbour.gCost || !openSet.Contains (neighbour)) {
-							neighbour.gCost = newMovementCostToNeighbour;
-							neighbour.hCost = getDistance (neighbour, targetNode);
+						neighbour.parent = currentNode;
 
-							neighbour.parent = currentNode;
-
-							if (!openSet.Contains (neighbour)) {
-								openSet.Add (neighbour);
-							} 
-							/*
-						else {
-							openSet.UpdateItem (neighbour);
-						}
-						*/
-						}
+						if (!openSet.Contains (neighbour)) {
+							openSet.Add (neighbour);
+						} 
+						/*
+					else {
+						openSet.UpdateItem (neighbour);
+					}
+					*/
 					}
 				}
 			}
         }
         yield return null;
 
-        if (!shortcut && pathSuccess) {
+        if (pathSuccess) {
             waypoints = RetracePath(startNode, targetNode);
         }
         requestManager.FinishedProcessingPath(waypoints, pathSuccess);

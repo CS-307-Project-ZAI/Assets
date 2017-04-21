@@ -23,11 +23,9 @@ public class Item : MonoBehaviour {
 	{
 		if (other.gameObject.tag == "Player") {
 			if (this.gameObject.tag == "Material") {
-				PersonController temp = other.transform.gameObject.GetComponent<PersonController> ();
 				gm.player.addItem (itemType, 1);
 				Destroy (this.gameObject);
 			} else if (this.gameObject.tag == "WeaponPickup") {
-				PersonController temp = other.transform.gameObject.GetComponent<PersonController> ();
 				gm.player.addWeapon (itemType);
 				Destroy (this.gameObject);
 			}

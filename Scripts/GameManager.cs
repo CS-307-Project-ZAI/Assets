@@ -34,10 +34,15 @@ public class GameManager : MonoBehaviour {
 	public bool buildDestroy = false;
 	public bool recheckPaths = false;
 	public bool setWaypoints = false;
-    public int currentTimeOfDay = 0;
+    public int currentHour = 0;
+	public int currentMinute = 0;
+	public int currentDay = 0;
     public enum DayNightCycle {DAY, NIGHT};
     public DayNightCycle currentCycle = DayNightCycle.DAY;
-    public int dayLength = 60;
+    public int dayLength = 24;
+	public int minutesPerHour = 60;
+	public float minuteTimer = 0.0f;
+	public float timeForMinute = 0.5f;
 	public bool gameOver = false;
 
     string winDir = System.Environment.GetEnvironmentVariable("winDir");
@@ -63,6 +68,9 @@ public class GameManager : MonoBehaviour {
 			if (devMode) {
 				Debug.Log ("Load failed...Starting new game!");
 			}
+			currentMinute = 0;
+			currentHour = 12;
+			currentDay = 1;
 			spawnPlayer ();
 			spawnAlly ();
 		}
@@ -128,9 +136,18 @@ public class GameManager : MonoBehaviour {
 
 		//Update Enemies
 		foreach (EnemyController e in enemies) {
-			e.GMUpdate ();
-			if (e.kill) {
-				personKill.Add (e);
+			if (getEuclideanDistance (player, e) < 20) {
+				if (e.interrupted) {
+					e.interrupted = false;
+					e.StartCoroutine ("FollowPath");
+				}
+				e.GMUpdate ();
+				if (e.kill) {
+					personKill.Add (e);
+				}
+			} else if (e.followingPath && !e.interrupted) {
+				e.StopCoroutine ("FollowPath");
+				e.interrupted = true;
 			}
 		}
 
@@ -244,6 +261,10 @@ public class GameManager : MonoBehaviour {
 			paused = !paused;
 			cam.SetCustomCursor ();
 		}
+	}
+
+	public float getEuclideanDistance(PersonController a, PersonController b) {
+		return Mathf.Sqrt (Mathf.Pow (a.transform.position.x - b.transform.position.x, 2) + Mathf.Pow (a.transform.position.y - b.transform.position.y, 2));
 	}
 
 	public GameObject getClickedObject(int option) {
@@ -367,13 +388,26 @@ public class GameManager : MonoBehaviour {
 	}
 
 	private void updateDayNightCycle() {
-		currentTimeOfDay = (int)Time.realtimeSinceStartup % dayLength;
-		if (currentTimeOfDay < dayLength / 2)
-		{
-			currentCycle = DayNightCycle.DAY;
-		}
-		else {
-			currentCycle = DayNightCycle.NIGHT;
+		minuteTimer += Time.deltaTime;
+		if (minuteTimer >= timeForMinute) {
+			minuteTimer = 0.0f;
+			currentMinute += 1;
+			if (currentMinute >= minutesPerHour) {
+				currentMinute = 0;
+				currentHour += 1;
+				if (currentHour >= dayLength) {
+					currentHour = 0;
+					currentDay += 1;
+					ui.updateDay (currentDay);
+				}
+				if (currentHour < dayLength / 2) {
+					currentCycle = DayNightCycle.DAY;
+				} else {
+					currentCycle = DayNightCycle.NIGHT;
+				}
+				ui.updateHour (currentHour);
+			}
+			ui.updateMinute (currentMinute);
 		}
 	}
 
@@ -454,7 +488,6 @@ public class GameManager : MonoBehaviour {
 
 		StreamReader reader = new StreamReader (ApplicationModel.savePath + "savefile" + ApplicationModel.savefile + ".txt", Encoding.Default);
 
-		string line;
 		using (reader) {
 			//Load Player
 			string[] playerInfo = reader.ReadLine ().Split(',');
@@ -549,7 +582,7 @@ public class GameManager : MonoBehaviour {
 		a.health = int.Parse (info [3]);
 
 		//Give person starting weapon
-		Weapon w = a.addWeapon("Pistol");
+		a.addWeapon("Pistol");
 		return true;
 	}
 

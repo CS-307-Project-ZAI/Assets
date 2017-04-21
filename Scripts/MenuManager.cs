@@ -55,7 +55,7 @@ public class MenuManager : GameManager {
 		dummyAlly.addWaypoint (new Vector3 (-4, 2, 0));
 		dummyAlly.addWaypoint (new Vector3 (-4, -1.5f, 0));
 		dummyAlly.addWaypoint (new Vector3 (-8, 0, 0));
-		dummyAlly.mode = "Points";
+		dummyAlly.stats.mode = "Points";
 		dummyAlly.rotationFix = 45.0f;
 		foreach (GameObject obj in dummyAlly.waypoints) {
 			obj.SetActive (false);
