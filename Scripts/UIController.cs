@@ -77,6 +77,11 @@ public class UIController : MonoBehaviour {
     Text questLog4;
     Text questLog5;
 
+	//Time and Day Count
+	Text hourDisplay;
+	Text minuteDisplay;
+	Text dayDisplay;
+
 	//Weapon Select Box
 	RectTransform[] slots = new RectTransform[6];
 	RectTransform selectedWep;
@@ -155,6 +160,11 @@ public class UIController : MonoBehaviour {
         questLog3 = GameObject.Find("log3").GetComponent<Text>();
         questLog4 = GameObject.Find("log4").GetComponent<Text>();
         questLog5 = GameObject.Find("log5").GetComponent<Text>();
+
+		//Time and Day Count
+		minuteDisplay = GameObject.Find ("Minute").GetComponent<Text> ();
+		hourDisplay = GameObject.Find ("Hour").GetComponent<Text> ();
+		dayDisplay = GameObject.Find ("Day").GetComponent<Text> ();
 
 		//Weapon Select Box
 		slots[0] = GameObject.Find("Inventory Slot 1").GetComponent<RectTransform> ();
@@ -354,6 +364,18 @@ public class UIController : MonoBehaviour {
             t.text = "empty quest slot";
         }
     }
+
+	public void updateMinute(int minute) {
+		minuteDisplay.text = (minute < 10 ? "0" + minute.ToString() : minute.ToString());
+	}
+
+	public void updateHour(int hour) {
+		hourDisplay.text = hour.ToString ();
+	}
+
+	public void updateDay(int day) {
+		dayDisplay.text = day.ToString ();
+	}
 
     private void DropdownChangeMode(Dropdown target) {
 		if (gm.selectedAlly != null) {

@@ -21,7 +21,7 @@ public class EnemyController : PersonController {
 	public AttributesZ stats = null;
 
 	// Use this for initialization
-	void Start () {
+	new void Start () {
         enemyType = EnemyType.getType(spawnID);
 		attackTimer = 0.0f;
 		//gm = FindObjectOfType<GameManager> ();

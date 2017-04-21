@@ -19,6 +19,11 @@ public class PathRequestManager : MonoBehaviour {
     }
 
 	public static void RequestPath(PersonController obj, Vector3 pathStart, Vector3 pathEnd, Action<Vector3[], bool> callback) {
+		Vector3[] check = instance.pathfinding.quickCheck (pathStart, pathEnd);
+		if (check != null) {
+			callback (check, true);
+			return;
+		}
 		//Debug.Log ("Path request made");
 		obj.request = new PathRequestManager.PathRequest(pathStart, pathEnd, callback);
         instance.pathRequestQueue.Enqueue(obj);

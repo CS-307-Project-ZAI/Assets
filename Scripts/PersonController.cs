@@ -28,6 +28,7 @@ public class PersonController : MonoBehaviour {
 	public float attackTimer = 0.0f;
 	public bool performingAction = false;
 	public List<PersonController> othersInfluenced = new List<PersonController> ();
+	public bool interrupted = false;
 
 	protected void Start() {
         itemDic.Add ("cloth", 0);
@@ -65,7 +66,6 @@ public class PersonController : MonoBehaviour {
 			if (from.tag == "Player" && this.tag == "Enemy") {
 				PlayerController pc = (PlayerController)from;
 				pc.questLog.addKill (1);
-				Debug.Log ("Kill + 1");
 			}
 		}
 	}
